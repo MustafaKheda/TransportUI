@@ -5,7 +5,6 @@ import OrderDetails from "../pages/OrderDetails";
 import BranchesDetails from "../pages/BranchesDetails";
 import UserDetails from "../pages/UserDetails";
 import TruckDetails from "../pages/TruckDetails";
-
 const RouteConfig = () => {
   return (
     <Routes>

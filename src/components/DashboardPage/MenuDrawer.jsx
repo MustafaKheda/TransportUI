@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Drawer, List, ListItem, ListItemText, ListItemIcon, IconButton, Divider } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -8,13 +9,20 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 const menuItems = [
-  { text: "Orders", icon: <ShoppingCartIcon /> },
-  { text: "Branches", icon: <BusinessIcon /> },
-  { text: "Users", icon: <PeopleIcon /> },
-  { text: "Truck", icon: <LocalShippingIcon /> },
+  { text: "Orders", icon: <ShoppingCartIcon />, path: "/orderdetails" },
+  { text: "Branches", icon: <BusinessIcon />, path: "/branchesdetails" },
+  { text: "Users", icon: <PeopleIcon />, path: "/usersdetails" },
+  { text: "Truck", icon: <LocalShippingIcon />, path: "/trucksdetails" },
 ];
 
-const MenuDrawer = ({ onSelect, toggleDrawer }) => {
+const MenuDrawer = ({ toggleDrawer }) => {
+  const navigate = useNavigate(); // Initialize navigation
+
+  const handleNavigation = (path) => {
+    navigate(path);
+    if (toggleDrawer) toggleDrawer(); // Close drawer if it's not permanent
+  };
+
   return (
     <Drawer
       variant="permanent"
@@ -36,12 +44,12 @@ const MenuDrawer = ({ onSelect, toggleDrawer }) => {
 
       {/* Menu List */}
       <List className="w-full">
-        {menuItems.map(({ text, icon }) => (
+        {menuItems.map(({ text, icon, path }) => (
           <ListItem
             button
             key={text}
-            onClick={() => onSelect(text)}
-            className="border-b"
+            onClick={() => handleNavigation(path)}
+            className="border-b cursor-pointer"
           >
             <ListItemIcon>{icon}</ListItemIcon>
             <ListItemText primary={text} />
