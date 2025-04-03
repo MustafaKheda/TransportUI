@@ -32,7 +32,7 @@ function RegistrationForm({ order, onClose }) {
 
   return (
     <div className="w-full p-2 flex flex-col gap-3">
-      <h2 style={{ textAlign: "center" }}>Edit Order</h2>
+      <h2 style={{ textAlign: "center" }}>Add User</h2>
       <form className="flex gap-2 flex-col" onSubmit={handleSubmit}>
         <TextField label="Name" name="name" value={formData.name} onChange={handleChange} fullWidth required />
         <TextField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} fullWidth required />
