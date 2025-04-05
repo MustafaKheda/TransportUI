@@ -8,26 +8,24 @@ import {
   Autocomplete,
   Select,
   MenuItem,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
 } from "@mui/material";
+import AddItem from "./AddItemBox";
 
 const consignerList = ["ABC Logistics", "XYZ Transport", "PQR Shipping"];
 const consigneeList = ["DEF Enterprises", "LMN Distributors", "STU Retailers"];
 const locationList = ["New York", "Los Angeles", "Chicago", "Houston"];
 const truckNumbers = ["TN-001", "TN-002", "TN-003"];
-const drivers = [
+
+const initialDrivers = [
   { name: "John Doe", phone: "9876543210" },
   { name: "Jane Smith", phone: "8765432109" },
   { name: "Mike Johnson", phone: "7654321098" },
 ];
 
 const AddNewOrderModal = ({ onClose }) => {
+  const [drivers, setDrivers] = useState(initialDrivers);
+  const [showAddDriver, setShowAddDriver] = useState(false);
+
   const [orderData, setOrderData] = useState({
     date: new Date().toISOString().split("T")[0],
     consignmentNo: "",
@@ -46,36 +44,6 @@ const AddNewOrderModal = ({ onClose }) => {
     freight: "",
   });
 
-  const orders = [
-    {
-      orderId: "001",
-      customerName: "Order A",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-    {
-      orderId: "002",
-      customerName: "Order B",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-    {
-      orderId: "003",
-      customerName: "Order C",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-  ];
-
   const handleChange = (e) => {
     setOrderData({ ...orderData, [e.target.name]: e.target.value });
   };
@@ -92,7 +60,6 @@ const AddNewOrderModal = ({ onClose }) => {
         "& .MuiDrawer-paper": { width: 750, zIndex: 1200 },
       }}
     >
-      {/* Top Section */}
       <Box
         sx={{
           display: "grid",
@@ -102,7 +69,6 @@ const AddNewOrderModal = ({ onClose }) => {
           padding: 2,
         }}
       >
-        {/* Date & Consignment Number */}
         <TextField
           label="Date"
           type="date"
@@ -120,7 +86,6 @@ const AddNewOrderModal = ({ onClose }) => {
           fullWidth
         />
 
-        {/* Consigner & Consignee */}
         <Autocomplete
           options={consignerList}
           renderInput={(params) => (
@@ -154,7 +119,6 @@ const AddNewOrderModal = ({ onClose }) => {
           fullWidth
         />
 
-        {/* From & To Locations */}
         <Autocomplete
           options={locationList}
           renderInput={(params) => (
@@ -174,7 +138,6 @@ const AddNewOrderModal = ({ onClose }) => {
           }
         />
 
-        {/* Truck Number */}
         <Select
           name="truckNumber"
           value={orderData.truckNumber}
@@ -192,86 +155,75 @@ const AddNewOrderModal = ({ onClose }) => {
           ))}
         </Select>
 
-        {/* Driver Name & Driver Phone */}
-        <Select
-          name="driverName"
+        {/* Updated Driver Name */}
+        <Autocomplete
+          freeSolo
+          options={drivers.map((d) => d.name)}
           value={orderData.driverName}
-          onChange={(e) => {
-            const selectedDriver = drivers.find(
-              (d) => d.name === e.target.value
-            );
-            setOrderData({
-              ...orderData,
-              driverName: selectedDriver.name,
-              driverPhone: selectedDriver.phone,
-            });
+          onInputChange={(e, newInputValue) => {
+            const exists = drivers.some((d) => d.name === newInputValue);
+            setShowAddDriver(!exists && newInputValue !== "");
+            setOrderData({ ...orderData, driverName: newInputValue });
           }}
-          displayEmpty
-          fullWidth
-        >
-          <MenuItem value="" disabled>
-            Select Driver
-          </MenuItem>
-          {drivers.map((driver) => (
-            <MenuItem key={driver.name} value={driver.name}>
-              {driver.name}
-            </MenuItem>
-          ))}
-        </Select>
+          renderInput={(params) => (
+            <TextField {...params} label="Driver Name" fullWidth />
+          )}
+        />
 
         <TextField
           label="Driver Phone"
           name="driverPhone"
           value={orderData.driverPhone}
+          onChange={(e) => {
+            const exists = drivers.some((d) => d.phone === e.target.value);
+            setShowAddDriver(!exists && e.target.value !== "");
+            setOrderData({ ...orderData, driverPhone: e.target.value });
+          }}
           fullWidth
         />
+
+        {showAddDriver && (
+          <Box sx={{ gridColumn: "span 2" }}>
+            <Button
+              variant="outlined"
+              color="success"
+              onClick={() => {
+                if (
+                  orderData.driverName &&
+                  orderData.driverPhone &&
+                  !drivers.some(
+                    (d) =>
+                      d.name === orderData.driverName ||
+                      d.phone === orderData.driverPhone
+                  )
+                ) {
+                  setDrivers([
+                    ...drivers,
+                    {
+                      name: orderData.driverName,
+                      phone: orderData.driverPhone,
+                    },
+                  ]);
+                  setShowAddDriver(false);
+                }
+              }}
+            >
+              Add New Driver
+            </Button>
+          </Box>
+        )}
+
         <TextField
           label="Items"
-          name="Items"
+          name="items"
           value={orderData.items}
+          onChange={handleChange}
           fullWidth
         />
-        <Button onClick={onClose} color="secondary" variant="outlined">
-          Add Item
-        </Button>
       </Box>
-      <Box sx={{ px: 2, mt: 4 }}>
-        <TableContainer component={Paper} elevation={3}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                <TableCell>
-                  <strong>ID</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Name</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Weight</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Per Unit</strong>
-                </TableCell>
-                <TableCell>
-                  <strong>Rate</strong>
-                </TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.orderId}>
-                  <TableCell>{order.orderId}</TableCell>
-                  <TableCell>{order.customerName}</TableCell>
-                  <TableCell>{order.pickup}</TableCell>
-                  <TableCell>{order.dropoff}</TableCell>
-                  <TableCell>{order.items}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
 
-        {/* Aligned Bottom Fields */}
+      <Box sx={{ px: 2 }}>
+        <AddItem />
         <Box
           sx={{
             display: "grid",
@@ -304,7 +256,6 @@ const AddNewOrderModal = ({ onClose }) => {
         </Box>
       </Box>
 
-      {/* Menu List */}
       <DialogActions sx={{ padding: "16px" }}>
         <Button onClick={onClose} color="secondary" variant="outlined">
           Cancel

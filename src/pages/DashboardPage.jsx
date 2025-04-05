@@ -10,8 +10,6 @@ import {
   IconButton,
   Drawer,
   Button,
-  Modal,
-  Box,
 } from "@mui/material";
 import MenuDrawer from "../components/DashboardPage/MenuDrawer";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -36,9 +34,13 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ width: "95%", margin: "0 5px" }}>
-
-      <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div style={{ display: "flex" }}>
+      <div style={{ padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
+        {!drawerOpen && (
+          <IconButton onClick={toggleDrawer} style={{ alignSelf: "flex-start", marginBottom: 10 }}>
+            <MenuIcon />
+          </IconButton>
+        )}
 
         {/* Header with Add New Button */}
         <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
