@@ -9,7 +9,7 @@ import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 const menuItems = [
-  { text: "Orders", icon: <ShoppingCartIcon />, path: "/orderdetails" },
+  { text: "Orders", icon: <ShoppingCartIcon />, path: "/dashboard" },
   { text: "Branches", icon: <BusinessIcon />, path: "/branchesdetails" },
   { text: "Users", icon: <PeopleIcon />, path: "/usersdetails" },
   { text: "Truck", icon: <LocalShippingIcon />, path: "/trucksdetails" },

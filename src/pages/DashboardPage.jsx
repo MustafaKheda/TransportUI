@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const handleSelect = (selection) => setSelected(selection);
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const handleCloseModal = () => setIsModalOpen(!isModalOpen);
 
   const orders = [
     { orderId: "001", customerName: "Order A", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
@@ -38,7 +38,9 @@ export default function DashboardPage() {
   return (
     <div style={{ display: "flex" }}>
       <Drawer variant="persistent" anchor="left" open={drawerOpen}>
-        <MenuDrawer onSelect={handleSelect} toggleDrawer={toggleDrawer} />
+        <MenuDrawer 
+        onSelect={handleSelect} 
+        toggleDrawer={toggleDrawer} />
       </Drawer>
 
       <div style={{ marginLeft: drawerOpen ? 240 : 0, padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -51,7 +53,7 @@ export default function DashboardPage() {
         {/* Header with Add New Button */}
         <div style={{ display: "flex", justifyContent: "space-between", width: "90%", alignItems: "center" }}>
           <h1 className="text-2xl pb-3">{selected}</h1>
-          <Button variant="contained" color="primary" onClick={handleOpenModal}>
+          <Button className="cursor-pointer" variant="contained" color="primary" onClick={handleOpenModal}>
             Add New
           </Button>
         </div>
@@ -98,7 +100,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Add New Order Modal */}
-      <AddNewOrderModal isOpen={isModalOpen} onClose={handleCloseModal} />
+      <Drawer variant="persistent" anchor="right" open={isModalOpen}>
+      <AddNewOrderModal onClose={handleCloseModal} />
+      </Drawer>
     </div>
   );
 }
