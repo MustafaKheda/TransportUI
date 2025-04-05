@@ -4,15 +4,21 @@ import DashboardPage from "../pages/DashboardPage";
 import BranchesDetails from "../pages/BranchesDetails";
 import UserDetails from "../pages/UserDetails";
 import TruckDetails from "../pages/TruckDetails";
+import Layout from "../Layout";
+
 const RouteConfig = () => {
   return (
     <Routes>
+      {/* Login page without Layout */}
       <Route path="/" element={<LoginPage />} />
-      <Route path="/dashboard" element={<DashboardPage/>} /> 
-      <Route path="/branchesdetails" element={<BranchesDetails/>}/>
-      <Route path="/usersdetails" element={<UserDetails/>}/>
-      <Route path="/trucksdetails" element={<TruckDetails/>}/>
-      
+
+      {/* All other routes wrapped inside Layout */}
+      <Route element={<Layout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/branchesdetails" element={<BranchesDetails />} />
+        <Route path="/usersdetails" element={<UserDetails />} />
+        <Route path="/trucksdetails" element={<TruckDetails />} />
+      </Route>
     </Routes>
   );
 };
