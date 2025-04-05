@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, TextField, Select, MenuItem, RadioGroup, FormControlLabel, Radio } from "@mui/material";
+import FreeSoloCreateOptionDialog from "../../AutoComplete";
 
 function RegistrationForm({ order, onClose }) {
   const [formData, setFormData] = useState({
@@ -34,10 +35,14 @@ function RegistrationForm({ order, onClose }) {
     <div className="w-full p-2 flex flex-col gap-3">
       <h2 style={{ textAlign: "center" }}>Add User</h2>
       <form className="flex gap-2 flex-col" onSubmit={handleSubmit}>
-        <TextField label="Name" name="name" value={formData.name} onChange={handleChange} fullWidth required />
-        <TextField label="Email" name="email" type="email" value={formData.email} onChange={handleChange} fullWidth required />
-        <TextField label="Password" name="password" type="password" value={formData.password} onChange={handleChange} fullWidth required />
-        <Select name="branch" value={formData.branch} onChange={handleChange} fullWidth required>
+        <TextField size="small" label="Name" name="name" value={formData.name} onChange={handleChange} fullWidth required />
+        <TextField size="small" label="Email" name="email" type="email" value={formData.email} onChange={handleChange} fullWidth required />
+        <TextField size="small" label="Password" name="password" type="password" value={formData.password} onChange={handleChange} fullWidth required />
+
+
+
+        <FreeSoloCreateOptionDialog />
+        <Select size="small" name="branch" value={formData.branch} onChange={handleChange} fullWidth required>
           <MenuItem value="">Select Branch</MenuItem>
           <MenuItem value="Branch 1">Branch 1</MenuItem>
           <MenuItem value="Branch 2">Branch 2</MenuItem>
@@ -47,12 +52,12 @@ function RegistrationForm({ order, onClose }) {
           <MenuItem value="Manager 1">Manager 1</MenuItem>
           <MenuItem value="Manager 2">Manager 2</MenuItem>
         </Select>
-        <RadioGroup 
-        row 
-        name="role" 
-        value={formData.role} 
-        onChange={handleChange}
-        className="flex justify-center items-center"
+        <RadioGroup
+          row
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
+          className="flex justify-center items-center"
         >
           <FormControlLabel value="admin" control={<Radio />} label="Admin" />
           <FormControlLabel value="manager" control={<Radio />} label="Manager" />

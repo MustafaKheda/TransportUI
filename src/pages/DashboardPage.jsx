@@ -36,22 +36,12 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ display: "flex" }}>
-      <Drawer variant="persistent" anchor="left" open={drawerOpen}>
-        <MenuDrawer 
-        onSelect={handleSelect} 
-        toggleDrawer={toggleDrawer} />
-      </Drawer>
+    <div style={{ width: "95%", margin: "0 5px" }}>
 
-      <div style={{ marginLeft: drawerOpen ? 240 : 0, padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {!drawerOpen && (
-          <IconButton onClick={toggleDrawer} style={{ alignSelf: "flex-start", marginBottom: 10 }}>
-            <MenuIcon />
-          </IconButton>
-        )}
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
         {/* Header with Add New Button */}
-        <div style={{ display: "flex", justifyContent: "space-between", width: "90%", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
           <h1 className="text-2xl pb-3">{selected}</h1>
           <Button className="cursor-pointer" variant="contained" color="primary" onClick={handleOpenModal}>
             Add New
@@ -59,7 +49,7 @@ export default function DashboardPage() {
         </div>
 
         {selected === "Orders" && (
-          <TableContainer component={Paper} elevation={3} style={{ width: "90%",marginTop:8 }}>
+          <TableContainer component={Paper} elevation={3} style={{ width: "100%", marginTop: 8 }}>
             <Table>
               <TableHead>
                 <TableRow style={{ backgroundColor: "#f5f5f5" }}>
@@ -101,7 +91,7 @@ export default function DashboardPage() {
 
       {/* Add New Order Modal */}
       <Drawer variant="persistent" anchor="right" open={isModalOpen}>
-      <AddNewOrderModal onClose={handleCloseModal} />
+        <AddNewOrderModal onClose={handleCloseModal} />
       </Drawer>
     </div>
   );

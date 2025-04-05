@@ -16,6 +16,7 @@ const UserModal = ({ open, handleClose, editData, handleChange, handleSave }) =>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2} p={1}>
           <TextField
+            size="small"
             label="Username"
             name="username"
             value={editData.username}
@@ -24,6 +25,7 @@ const UserModal = ({ open, handleClose, editData, handleChange, handleSave }) =>
             required
           />
           <TextField
+            size="small"
             label="Phone Number"
             name="phone"
             value={editData.phone}
