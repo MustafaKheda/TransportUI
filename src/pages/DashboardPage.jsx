@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -16,6 +16,8 @@ import MenuIcon from "@mui/icons-material/Menu";
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
+import api from "../api/apihandler";
+
 
 export default function DashboardPage() {
   const [selected, setSelected] = useState("Orders");
@@ -32,6 +34,20 @@ export default function DashboardPage() {
     { orderId: "002", customerName: "Order B", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
     { orderId: "003", customerName: "Order C", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
   ];
+
+  const getallorders = async () => {
+    try {
+      const response = await api.get(`${import.meta.env.VITE_BASE_URL}/orders/meta`)
+      console.log("response:-",response)
+    } catch (error) {
+      console.log("error consoling:-",error)
+    }
+  }
+
+  useEffect(() => {
+    getallorders();
+  },[])
+  
 
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
