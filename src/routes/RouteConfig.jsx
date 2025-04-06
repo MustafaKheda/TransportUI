@@ -4,6 +4,7 @@ import DashboardPage from "../pages/DashboardPage";
 import BranchesDetails from "../pages/BranchesDetails";
 import UserDetails from "../pages/UserDetails";
 import TruckDetails from "../pages/TruckDetails";
+import DailyReport from "../pages/DailyReport";
 import Layout from "../Layout";
 const RouteConfig = () => {
   return (
@@ -17,6 +18,7 @@ const RouteConfig = () => {
         <Route path="/branchesdetails" element={<BranchesDetails />} />
         <Route path="/usersdetails" element={<UserDetails />} />
         <Route path="/trucksdetails" element={<TruckDetails />} />
+        <Route path="/daily-report" element={<DailyReport />} />
       </Route>
     </Routes >
   );
