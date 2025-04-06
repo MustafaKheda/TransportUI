@@ -49,12 +49,12 @@ const AddNewOrderModal = ({ onClose }) => {
     freight: "",
   });
   const [orderItems, setOrderItems] = useState([
-    { itemName: "", weight: "", unit: "", amount: "" },
+    { itemName: "", weight: "", unit: "", amount: "",qnt:"",rate:"" },
   ]);
   const addOrderItem = () => {
     setOrderItems([
       ...orderItems,
-      { itemName: "", weight: "", unit: "", amount: "" },
+      { itemName: "", weight: "", unit: "", amount: "",qnt:"",rate:"" },
     ]);
   };
   const orders = [
@@ -166,6 +166,7 @@ const AddNewOrderModal = ({ onClose }) => {
           value={orderData.consignergstin}
           onChange={handleChange}
           size="small"
+          disabled
         />
         <TextField
           label="GSTIN"
@@ -173,6 +174,7 @@ const AddNewOrderModal = ({ onClose }) => {
           value={orderData.consigneegstin}
           onChange={handleChange}
           size="small"
+          disabled
         />
 
         <Autocomplete
@@ -272,7 +274,7 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "itemName", e.target.value)
               }
-              sx={{ flex: 2 }}
+              sx={{ flex: .6 }}
             />
             <TextField
               size="small"
@@ -281,9 +283,9 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "weight", e.target.value)
               }
-              sx={{ flex: 1 }}
+              sx={{ flex: .6 }}
             />
-            <FormControl size="small" sx={{ flex: 1 }}>
+            <FormControl size="small" sx={{ flex: .4 }}>
               <InputLabel>Unit</InputLabel>
               <Select
                 value={item.unit}
@@ -304,7 +306,25 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "amount", e.target.value)
               }
-              sx={{ flex: 1 }}
+              sx={{ flex: .6 }}
+            />
+            <TextField
+              size="small"
+              label="Qnt"
+              value={item.qnt}
+              onChange={(e) =>
+                handleOrderItemChange(index, "qnt", e.target.value)
+              }
+              sx={{ flex: .6 }}
+            />
+            <TextField
+              size="small"
+              label="Rate"
+              value={item.rate}
+              onChange={(e) =>
+                handleOrderItemChange(index, "rate", e.target.value)
+              }
+              sx={{ flex: .6 }}
             />
             {array.length > 1 && <IconButton
               onClick={() => deleteOrderItem(index)}
