@@ -8,8 +8,13 @@ import {
   Autocomplete,
   Select,
   MenuItem,
+  FormControl,
+  InputLabel,
+  Grid,
+  Typography,
 } from "@mui/material";
-import AddItem from "./AddItemBox";
+import DeleteIcon from "@mui/icons-material/Delete";
+import IconButton from "@mui/material/IconButton";
 
 const consignerList = ["ABC Logistics", "XYZ Transport", "PQR Shipping"];
 const consigneeList = ["DEF Enterprises", "LMN Distributors", "STU Retailers"];
@@ -43,9 +48,60 @@ const AddNewOrderModal = ({ onClose }) => {
     totalrate: "",
     freight: "",
   });
+  const [orderItems, setOrderItems] = useState([
+    { itemName: "", weight: "", unit: "", amount: "" },
+  ]);
+  const addOrderItem = () => {
+    setOrderItems([
+      ...orderItems,
+      { itemName: "", weight: "", unit: "", amount: "" },
+    ]);
+  };
+  const orders = [
+    {
+      orderId: "001",
+      customerName: "Order A",
+      pickup: "Delhi",
+      dropoff: "Mumbai",
+      items: 10,
+      trucknum: "DL06IN2025",
+      amount: 10000,
+    },
+    {
+      orderId: "002",
+      customerName: "Order B",
+      pickup: "Delhi",
+      dropoff: "Mumbai",
+      items: 10,
+      trucknum: "DL06IN2025",
+      amount: 10000,
+    },
+    {
+      orderId: "003",
+      customerName: "Order C",
+      pickup: "Delhi",
+      dropoff: "Mumbai",
+      items: 10,
+      trucknum: "DL06IN2025",
+      amount: 10000,
+    },
+  ];
 
   const handleChange = (e) => {
     setOrderData({ ...orderData, [e.target.name]: e.target.value });
+  };
+  const gstOptions = [
+    { value: "igst", label: "IGST" },
+    { value: "sgst_cgst", label: "SGST + CGST" },
+  ];
+  const handleOrderItemChange = (index, field, value) => {
+    const updatedItems = [...orderItems];
+    updatedItems[index][field] = value;
+    setOrderItems(updatedItems);
+  };
+  const deleteOrderItem = (index) => {
+    const updatedItems = orderItems.filter((_, i) => i !== index);
+    setOrderItems(updatedItems);
   };
 
   return (
@@ -60,33 +116,32 @@ const AddNewOrderModal = ({ onClose }) => {
         "& .MuiDrawer-paper": { width: 750, zIndex: 1200 },
       }}
     >
+      {/* Top Section */}
+      <TextField
+        size="small"
+        sx={{
+          width: "30%",
+          marginTop: 2,
+          paddingX: 2,
+        }}
+        label="Date"
+        type="date"
+        name="date"
+        value={orderData.date}
+        onChange={handleChange}
+        InputLabelProps={{ shrink: true }}
+      />
       <Box
         sx={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
           gap: 2,
-          marginTop: 2,
           padding: 2,
         }}
       >
-        <TextField
-          label="Date"
-          type="date"
-          name="date"
-          value={orderData.date}
-          onChange={handleChange}
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-        />
-        <TextField
-          label="ORD NO"
-          name="consignmentNo"
-          value={orderData.consignmentNo}
-          onChange={handleChange}
-          fullWidth
-        />
 
         <Autocomplete
+          size="small"
           options={consignerList}
           renderInput={(params) => (
             <TextField {...params} label="Consigner" fullWidth />
@@ -96,6 +151,7 @@ const AddNewOrderModal = ({ onClose }) => {
           }
         />
         <Autocomplete
+          size="small"
           options={consigneeList}
           renderInput={(params) => (
             <TextField {...params} label="Consignee" fullWidth />
@@ -109,17 +165,18 @@ const AddNewOrderModal = ({ onClose }) => {
           name="consignergstin"
           value={orderData.consignergstin}
           onChange={handleChange}
-          fullWidth
+          size="small"
         />
         <TextField
           label="GSTIN"
           name="consigneegstin"
           value={orderData.consigneegstin}
           onChange={handleChange}
-          fullWidth
+          size="small"
         />
 
         <Autocomplete
+          size="small"
           options={locationList}
           renderInput={(params) => (
             <TextField {...params} label="From Location" fullWidth />
@@ -129,6 +186,7 @@ const AddNewOrderModal = ({ onClose }) => {
           }
         />
         <Autocomplete
+          size="small"
           options={locationList}
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth />
@@ -138,122 +196,224 @@ const AddNewOrderModal = ({ onClose }) => {
           }
         />
 
-        <Select
-          name="truckNumber"
-          value={orderData.truckNumber}
-          onChange={handleChange}
-          displayEmpty
-          fullWidth
-        >
-          <MenuItem value="" disabled>
-            Select Truck
-          </MenuItem>
-          {truckNumbers.map((truck) => (
-            <MenuItem key={truck} value={truck}>
-              {truck}
+
+        {/* Truck, Driver Name, and Driver Phone in one line */}
+        <Box sx={{ display: "flex", gap: 2, gridColumn: "span 2" }}>
+          {/* Truck Number */}
+          <Select
+            size="small"
+            name="truckNumber"
+            value={orderData.truckNumber}
+            onChange={handleChange}
+            displayEmpty
+            fullWidth
+            sx={{ flex: 1 }}
+          >
+            <MenuItem value="" disabled>
+              Select Truck
             </MenuItem>
-          ))}
-        </Select>
+            {truckNumbers.map((truck) => (
+              <MenuItem key={truck} value={truck}>
+                {truck}
+              </MenuItem>
+            ))}
+          </Select>
 
-        {/* Updated Driver Name */}
-        <Autocomplete
-          freeSolo
-          options={drivers.map((d) => d.name)}
-          value={orderData.driverName}
-          onInputChange={(e, newInputValue) => {
-            const exists = drivers.some((d) => d.name === newInputValue);
-            setShowAddDriver(!exists && newInputValue !== "");
-            setOrderData({ ...orderData, driverName: newInputValue });
-          }}
-          renderInput={(params) => (
-            <TextField {...params} label="Driver Name" fullWidth />
-          )}
-        />
+          {/* Driver Name */}
+          <Select
+            size="small"
+            name="driverName"
+            value={orderData.driverName}
+            onChange={(e) => {
+              const selectedDriver = drivers.find((d) => d.name === e.target.value);
+              setOrderData({
+                ...orderData,
+                driverName: selectedDriver.name,
+                driverPhone: selectedDriver.phone,
+              });
+            }}
+            displayEmpty
+            sx={{ flex: 1 }}
+          >
+            <MenuItem value="" disabled>
+              Select Driver
+            </MenuItem>
+            {drivers.map((driver) => (
+              <MenuItem key={driver.name} value={driver.name}>
+                {driver.name}
+              </MenuItem>
+            ))}
+          </Select>
 
-        <TextField
-          label="Driver Phone"
-          name="driverPhone"
-          value={orderData.driverPhone}
-          onChange={(e) => {
-            const exists = drivers.some((d) => d.phone === e.target.value);
-            setShowAddDriver(!exists && e.target.value !== "");
-            setOrderData({ ...orderData, driverPhone: e.target.value });
-          }}
-          fullWidth
-        />
-
-        {showAddDriver && (
-          <Box sx={{ gridColumn: "span 2" }}>
-            <Button
-              variant="outlined"
-              color="success"
-              onClick={() => {
-                if (
-                  orderData.driverName &&
-                  orderData.driverPhone &&
-                  !drivers.some(
-                    (d) =>
-                      d.name === orderData.driverName ||
-                      d.phone === orderData.driverPhone
-                  )
-                ) {
-                  setDrivers([
-                    ...drivers,
-                    {
-                      name: orderData.driverName,
-                      phone: orderData.driverPhone,
-                    },
-                  ]);
-                  setShowAddDriver(false);
-                }
-              }}
-            >
-              Add New Driver
-            </Button>
-          </Box>
-        )}
-
-        <TextField
-          label="Items"
-          name="items"
-          value={orderData.items}
-          onChange={handleChange}
-          fullWidth
-        />
-      </Box>
-
-      <Box sx={{ px: 2 }}>
-        <AddItem />
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 2,
-            mt: 3,
-          }}
-        >
+          {/* Driver Phone */}
           <TextField
-            label="GST %"
-            name="gst"
-            value={orderData.gst}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Total Rate"
-            name="totalrate"
-            value={orderData.totalrate}
-            onChange={handleChange}
-            fullWidth
-          />
-          <TextField
-            label="Freight"
-            name="freight"
-            value={orderData.freight}
-            onChange={handleChange}
-            fullWidth
+            size="small"
+            label="Driver Phone"
+            name="driverPhone"
+            value={orderData.driverPhone}
+            sx={{ flex: 1 }}
           />
         </Box>
+      </Box>
+      <Box sx={{ px: 2 }}>
+        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+          Order Items
+        </Typography>
+
+        {orderItems.map((item, index, array) => (
+          <Box
+            key={index}
+            sx={{ display: "flex", gap: 1, alignItems: "center", mb: 2 }}
+          >
+            <TextField
+              size="small"
+              label="Item Name"
+              value={item.itemName}
+              onChange={(e) =>
+                handleOrderItemChange(index, "itemName", e.target.value)
+              }
+              sx={{ flex: 2 }}
+            />
+            <TextField
+              size="small"
+              label="Weight"
+              value={item.weight}
+              onChange={(e) =>
+                handleOrderItemChange(index, "weight", e.target.value)
+              }
+              sx={{ flex: 1 }}
+            />
+            <FormControl size="small" sx={{ flex: 1 }}>
+              <InputLabel>Unit</InputLabel>
+              <Select
+                value={item.unit}
+                onChange={(e) =>
+                  handleOrderItemChange(index, "unit", e.target.value)
+                }
+                label="Unit"
+              >
+                <MenuItem value="KG">KG</MenuItem>
+                <MenuItem value="LITER">LITER</MenuItem>
+                <MenuItem value="PER UNIT">PER UNIT</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              size="small"
+              label="Amount"
+              value={item.amount}
+              onChange={(e) =>
+                handleOrderItemChange(index, "amount", e.target.value)
+              }
+              sx={{ flex: 1 }}
+            />
+            {array.length > 1 && <IconButton
+              onClick={() => deleteOrderItem(index)}
+              color="error"
+              sx={{ px: 0 }}
+            >
+              <DeleteIcon />
+            </IconButton>}
+          </Box>
+
+        ))}
+
+        <Button
+          variant="outlined"
+          onClick={addOrderItem}
+          size="small"
+          sx={{ mt: 1 }}
+        >
+          + Add Item
+        </Button>
+      </Box>
+      <Box sx={{ px: 2, mt: 4 }}>
+        {/* Aligned Bottom Fields */}
+        <Grid mt={2}
+          container
+          spacing={1}
+        >
+          <Grid container item size={9} spacing={1} gap={1}>
+
+            <Grid item size={12} display={"flex"} gap={1}>
+              {/* GST Type */}
+              <FormControl sx={{ minWidth: 150 }} size="small">
+                <InputLabel>GST Type</InputLabel>
+                <Select
+                  size="small"
+                  name="gstType"
+                  value={orderData.gstType}
+                  onChange={handleChange}
+                  label="GST Type"
+                >
+                  {gstOptions.map((opt) => (
+                    <MenuItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {/* GST Inputs */}
+              {orderData.gstType === "igst" ? (
+                <TextField
+                  label="IGST %"
+                  name="igst"
+                  value={orderData.igst}
+                  onChange={handleChange}
+                  size="small"
+                  sx={{ width: 120 }}
+                />
+              ) : (
+                <>
+                  <TextField
+                    label="SGST %"
+                    name="sgst"
+                    value={orderData.sgst}
+                    onChange={handleChange}
+                    size="small"
+                    sx={{ width: 120 }}
+                  />
+                  <TextField
+                    label="CGST %"
+                    name="cgst"
+                    value={orderData.cgst}
+                    onChange={handleChange}
+                    size="small"
+                    sx={{ width: 120 }}
+                  />
+                </>
+              )}
+              <TextField
+                label="GST Amount"
+                name="amount"
+                value={orderData.amount}
+                onChange={handleChange}
+                size="small"
+                sx={{ width: 120 }}
+              />
+            </Grid>
+            {/* Freight */}
+            <TextField
+              label="Freight"
+              name="freight"
+              value={orderData.freight}
+              onChange={handleChange}
+              size="small"
+              sx={{ width: 150 }}
+            />
+          </Grid>
+          {/* Total Amount */}
+          <Grid item size={3}>
+            <TextField
+              label="Total Amount"
+              name="totalAmount"
+              value={orderData.totalAmount}
+              onChange={handleChange}
+              size="small"
+              sx={{ width: 150 }}
+            />
+          </Grid>
+        </Grid>
       </Box>
 
       <DialogActions sx={{ padding: "16px" }}>
@@ -264,7 +424,7 @@ const AddNewOrderModal = ({ onClose }) => {
           Save Order
         </Button>
       </DialogActions>
-    </Drawer>
+    </Drawer >
   );
 };
 

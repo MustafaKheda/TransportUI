@@ -10,6 +10,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 const menuItems = [
   { text: "Orders", icon: <ShoppingCartIcon />, path: "/dashboard" },
+  { text: "Daily Report", icon: <LocalShippingIcon />, path: "/trucksdetails" },
   { text: "Branches", icon: <BusinessIcon />, path: "/branchesdetails" },
   { text: "Users", icon: <PeopleIcon />, path: "/usersdetails" },
   { text: "Truck", icon: <LocalShippingIcon />, path: "/trucksdetails" },
@@ -20,7 +21,7 @@ const MenuDrawer = ({ toggleDrawer }) => {
 
   const handleNavigation = (path) => {
     navigate(path);
-    if (toggleDrawer) toggleDrawer(); // Close drawer if it's not permanent
+    // if (toggleDrawer) toggleDrawer(); // Close drawer if it's not permanent
   };
 
   return (

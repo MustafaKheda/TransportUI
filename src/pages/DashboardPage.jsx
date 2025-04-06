@@ -34,13 +34,9 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div style={{ display: "flex" }}>
-      <div style={{ padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        {!drawerOpen && (
-          <IconButton onClick={toggleDrawer} style={{ alignSelf: "flex-start", marginBottom: 10 }}>
-            <MenuIcon />
-          </IconButton>
-        )}
+    <div style={{ width: "95%", margin: "0 5px" }}>
+
+      <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
         {/* Header with Add New Button */}
         <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
