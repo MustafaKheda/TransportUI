@@ -25,13 +25,12 @@ function LoginPage() {
     setError('');
 
     try {
-      const response = await axios.post(import.meta.env.VITE_BASE_URL, {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
         email,
         password
       });
-
+      console.log("response:-",response)
       resetCredentials();
-
       // Redirect to dashboard
       navigate("/dashboard");
     } catch (err) {

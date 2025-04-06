@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  withCredentials: true, // 🔥 needed to send cookies
+  credentials: "include", 
 });
 
 // Intercept 401 errors and attempt token refresh

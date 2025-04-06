@@ -1,8 +1,5 @@
 import { create } from "zustand";
 
-// authStore.js
-import { create } from 'zustand';
-
 const useAuthStore = create((set) => ({
   email: '',
   password: '',
