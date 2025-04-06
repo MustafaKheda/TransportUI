@@ -30,7 +30,6 @@ function LoginPage() {
         email,
         password
       });
-      console.log("response:-", response)
       resetCredentials();
       // Redirect to dashboard
       navigate("/dashboard");

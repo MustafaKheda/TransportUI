@@ -10,27 +10,33 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Grid,
   Typography,
+  IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import IconButton from "@mui/material/IconButton";
 import DriverAutocomplete from "./DriverSelectorBox";
 
-const consignerList = ["ABC Logistics", "XYZ Transport", "PQR Shipping"];
-const consigneeList = ["DEF Enterprises", "LMN Distributors", "STU Retailers"];
 const locationList = ["New York", "Los Angeles", "Chicago", "Houston"];
-const truckNumbers = ["TN-001", "TN-002", "TN-003"];
 
-const initialDrivers = [
-  { name: "John Doe", phone: "9876543210" },
-  { name: "Jane Smith", phone: "8765432109" },
-  { name: "Mike Johnson", phone: "7654321098" },
-];
+const AddNewOrderModal = ({ onClose, ordermetadata }) => {
+  console.log("data:-", ordermetadata);
 
-const AddNewOrderModal = ({ onClose }) => {
-  const [drivers, setDrivers] = useState(initialDrivers);
-  const [showAddDriver, setShowAddDriver] = useState(false);
+  const userlocation = ordermetadata?.userLoction
+    ? Array.isArray(ordermetadata.userLoction)
+      ? ordermetadata.userLoction
+      : [ordermetadata.userLoction]
+    : [];
+
+  const users = ordermetadata.customers || [];
+  const usersname = users.map((user) => user.name);
+
+  const alldrivers = ordermetadata.drivers || [];
+  const driverInfo = alldrivers.map((driver) => ({
+    name: driver.name,
+    phoneNumber: driver.phoneNumber,
+  }));
+
+  const alltrucks = ordermetadata.trucks || [];
 
   const [orderData, setOrderData] = useState({
     date: new Date().toISOString().split("T")[0],
@@ -48,68 +54,49 @@ const AddNewOrderModal = ({ onClose }) => {
     gst: "",
     totalrate: "",
     freight: "",
+    gstType: "",
+    igst: "",
+    sgst: "",
+    cgst: "",
+    amount: "",
+    totalAmount: "",
   });
+
   const [orderItems, setOrderItems] = useState([
     { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
   ]);
+
+  const handleChange = (e) => {
+    setOrderData({ ...orderData, [e.target.name]: e.target.value });
+  };
+
   const addOrderItem = () => {
     setOrderItems([
       ...orderItems,
       { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
     ]);
   };
-  const orders = [
-    {
-      orderId: "001",
-      customerName: "Order A",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-    {
-      orderId: "002",
-      customerName: "Order B",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-    {
-      orderId: "003",
-      customerName: "Order C",
-      pickup: "Delhi",
-      dropoff: "Mumbai",
-      items: 10,
-      trucknum: "DL06IN2025",
-      amount: 10000,
-    },
-  ];
 
-  const handleChange = (e) => {
-    setOrderData({ ...orderData, [e.target.name]: e.target.value });
-  };
-  const gstOptions = [
-    { value: "igst", label: "IGST" },
-    { value: "sgst_cgst", label: "SGST + CGST" },
-  ];
   const handleOrderItemChange = (index, field, value) => {
     const updatedItems = [...orderItems];
     updatedItems[index][field] = value;
     setOrderItems(updatedItems);
   };
+
   const deleteOrderItem = (index) => {
     const updatedItems = orderItems.filter((_, i) => i !== index);
     setOrderItems(updatedItems);
   };
 
+  const gstOptions = [
+    { value: "igst", label: "IGST" },
+    { value: "sgst_cgst", label: "SGST + CGST" },
+  ];
+
   return (
     <Drawer
       variant="persistent"
       anchor="right"
-      elevation={5}
       open
       sx={{
         width: 750,
@@ -117,14 +104,9 @@ const AddNewOrderModal = ({ onClose }) => {
         "& .MuiDrawer-paper": { width: 750, zIndex: 1200 },
       }}
     >
-      {/* Top Section */}
       <TextField
         size="small"
-        sx={{
-          width: "30%",
-          marginTop: 2,
-          paddingX: 2,
-        }}
+        sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
         label="Date"
         type="date"
         name="date"
@@ -142,22 +124,22 @@ const AddNewOrderModal = ({ onClose }) => {
       >
         <Autocomplete
           size="small"
-          options={consignerList}
+          options={usersname}
           renderInput={(params) => (
             <TextField {...params} label="Consigner" fullWidth />
           )}
-          onChange={(event, newValue) =>
-            setOrderData({ ...orderData, consigner: newValue })
+          onChange={(e, value) =>
+            setOrderData({ ...orderData, consigner: value })
           }
         />
         <Autocomplete
           size="small"
-          options={consigneeList}
+          options={usersname}
           renderInput={(params) => (
             <TextField {...params} label="Consignee" fullWidth />
           )}
-          onChange={(event, newValue) =>
-            setOrderData({ ...orderData, consignee: newValue })
+          onChange={(e, value) =>
+            setOrderData({ ...orderData, consignee: value })
           }
         />
         <TextField
@@ -176,31 +158,24 @@ const AddNewOrderModal = ({ onClose }) => {
           size="small"
           disabled
         />
+        <TextField
+          label="From Location"
+          size="small"
+          fullWidth
+          value={orderData.from || ordermetadata?.userLoction || ""}
+          onChange={(e) => setOrderData({ ...orderData, from: e.target.value })}
+          disabled
+        />
 
         <Autocomplete
           size="small"
-          options={locationList}
-          renderInput={(params) => (
-            <TextField {...params} label="From Location" fullWidth />
-          )}
-          onChange={(event, newValue) =>
-            setOrderData({ ...orderData, from: newValue })
-          }
-        />
-        <Autocomplete
-          size="small"
-          options={locationList}
+          options={userlocation}
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth />
           )}
-          onChange={(event, newValue) =>
-            setOrderData({ ...orderData, to: newValue })
-          }
+          onChange={(e, value) => setOrderData({ ...orderData, to: value })}
         />
-
-        {/* Truck, Driver Name, and Driver Phone in one line */}
         <Box sx={{ display: "flex", gap: 2, gridColumn: "span 2" }}>
-          {/* Truck Number */}
           <Select
             size="small"
             name="truckNumber"
@@ -213,17 +188,20 @@ const AddNewOrderModal = ({ onClose }) => {
             <MenuItem value="" disabled>
               Select Truck
             </MenuItem>
-            {truckNumbers.map((truck) => (
-              <MenuItem key={truck} value={truck}>
-                {truck}
+            {alltrucks.map((truck, idx) => (
+              <MenuItem key={idx} value={truck.truckNumber}>
+                {truck.truckNumber}
               </MenuItem>
             ))}
           </Select>
-
-          {/* Driver Name */}
-          <DriverAutocomplete />
+          <DriverAutocomplete
+            driverInfo={driverInfo}
+            setOrderData={setOrderData}
+            orderData={orderData}
+          />
         </Box>
       </Box>
+
       <Box sx={{ px: 2 }}>
         <Typography variant="subtitle1" fontWeight={600} gutterBottom>
           Order Items
@@ -304,7 +282,6 @@ const AddNewOrderModal = ({ onClose }) => {
             )}
           </Box>
         ))}
-
         <Button
           variant="outlined"
           onClick={addOrderItem}
@@ -314,8 +291,8 @@ const AddNewOrderModal = ({ onClose }) => {
           + Add Item
         </Button>
       </Box>
+
       <Box sx={{ px: 2, mt: 4 }}>
-        {/* GST Row */}
         <Box
           display="flex"
           gap={2}
@@ -323,10 +300,7 @@ const AddNewOrderModal = ({ onClose }) => {
           justifyContent="space-between"
           flexWrap="wrap"
         >
-          {/* Left Side: GST Inputs */}
-          <Box display="flex" 
-          gap={2} alignItems="center" flexWrap="wrap">
-            {/* GST Type */}
+          <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
             <FormControl sx={{ minWidth: 160 }} size="small">
               <InputLabel>GST Type</InputLabel>
               <Select
@@ -344,7 +318,6 @@ const AddNewOrderModal = ({ onClose }) => {
               </Select>
             </FormControl>
 
-            {/* Conditional GST Fields */}
             {orderData.gstType === "igst" ? (
               <TextField
                 label="IGST %"
@@ -374,7 +347,6 @@ const AddNewOrderModal = ({ onClose }) => {
                 />
               </>
             )}
-
             <TextField
               label="GST Amount"
               name="amount"
@@ -384,12 +356,7 @@ const AddNewOrderModal = ({ onClose }) => {
               sx={{ width: 140 }}
             />
           </Box>
-
-          {/* Right Side: Totals */}
-          <Box 
-          display="flex" 
-          flexDirection="row" 
-          gap={2}>
+          <Box display="flex" flexDirection="row" gap={2}>
             <TextField
               label="Total Amount"
               name="totalAmount"
@@ -406,24 +373,17 @@ const AddNewOrderModal = ({ onClose }) => {
               size="small"
               sx={{ width: 160 }}
             />
-            <TextField
-              label="Advance"
-              name="advance"
-              value={orderData.advance}
-              onChange={handleChange}
-              size="small"
-              sx={{ width: 160 }}
-            />
           </Box>
         </Box>
       </Box>
 
-      <DialogActions sx={{ padding: "16px" }}>
-        <Button onClick={onClose} color="secondary" variant="outlined">
+      {/* Bottom Actions */}
+      <DialogActions sx={{ px: 2, py: 2 }}>
+        <Button onClick={onClose} color="error" variant="outlined">
           Cancel
         </Button>
-        <Button color="primary" variant="contained">
-          Save Order
+        <Button variant="contained" color="primary">
+          Submit Order
         </Button>
       </DialogActions>
     </Drawer>

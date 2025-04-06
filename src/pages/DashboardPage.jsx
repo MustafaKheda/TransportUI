@@ -16,14 +16,14 @@ import MenuIcon from "@mui/icons-material/Menu";
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
-import api from "../api/apihandler";
+import {api} from "../api/apihandler";
 
 
 export default function DashboardPage() {
   const [selected, setSelected] = useState("Orders");
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [ordermetadata,setOrderMetaData] = useState({})
   const handleSelect = (selection) => setSelected(selection);
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   const handleOpenModal = () => setIsModalOpen(true);
@@ -35,20 +35,19 @@ export default function DashboardPage() {
     { orderId: "003", customerName: "Order C", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
   ];
 
-  const getallorders = async () => {
+  const getOrderformData = async () => {
     try {
       const response = await api.get(`${import.meta.env.VITE_BASE_URL}/orders/meta`)
-      console.log("response:-",response)
+      setOrderMetaData(response.data)
     } catch (error) {
       console.log("error consoling:-",error)
     }
   }
 
   useEffect(() => {
-    getallorders();
+    getOrderformData();
   },[])
   
-
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
 
@@ -105,7 +104,7 @@ export default function DashboardPage() {
 
       {/* Add New Order Modal */}
       <Drawer variant="persistent" anchor="right" open={isModalOpen}>
-        <AddNewOrderModal onClose={handleCloseModal} />
+        <AddNewOrderModal ordermetadata={ordermetadata} onClose={handleCloseModal} />
       </Drawer>
     </div>
   );
