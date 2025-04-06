@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import IconButton from "@mui/material/IconButton";
+import DriverAutocomplete from "./DriverSelectorBox";
 
 const consignerList = ["ABC Logistics", "XYZ Transport", "PQR Shipping"];
 const consigneeList = ["DEF Enterprises", "LMN Distributors", "STU Retailers"];
@@ -49,12 +50,12 @@ const AddNewOrderModal = ({ onClose }) => {
     freight: "",
   });
   const [orderItems, setOrderItems] = useState([
-    { itemName: "", weight: "", unit: "", amount: "",qnt:"",rate:"" },
+    { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
   ]);
   const addOrderItem = () => {
     setOrderItems([
       ...orderItems,
-      { itemName: "", weight: "", unit: "", amount: "",qnt:"",rate:"" },
+      { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
     ]);
   };
   const orders = [
@@ -139,7 +140,6 @@ const AddNewOrderModal = ({ onClose }) => {
           padding: 2,
         }}
       >
-
         <Autocomplete
           size="small"
           options={consignerList}
@@ -198,7 +198,6 @@ const AddNewOrderModal = ({ onClose }) => {
           }
         />
 
-
         {/* Truck, Driver Name, and Driver Phone in one line */}
         <Box sx={{ display: "flex", gap: 2, gridColumn: "span 2" }}>
           {/* Truck Number */}
@@ -222,39 +221,7 @@ const AddNewOrderModal = ({ onClose }) => {
           </Select>
 
           {/* Driver Name */}
-          <Select
-            size="small"
-            name="driverName"
-            value={orderData.driverName}
-            onChange={(e) => {
-              const selectedDriver = drivers.find((d) => d.name === e.target.value);
-              setOrderData({
-                ...orderData,
-                driverName: selectedDriver.name,
-                driverPhone: selectedDriver.phone,
-              });
-            }}
-            displayEmpty
-            sx={{ flex: 1 }}
-          >
-            <MenuItem value="" disabled>
-              Select Driver
-            </MenuItem>
-            {drivers.map((driver) => (
-              <MenuItem key={driver.name} value={driver.name}>
-                {driver.name}
-              </MenuItem>
-            ))}
-          </Select>
-
-          {/* Driver Phone */}
-          <TextField
-            size="small"
-            label="Driver Phone"
-            name="driverPhone"
-            value={orderData.driverPhone}
-            sx={{ flex: 1 }}
-          />
+          <DriverAutocomplete />
         </Box>
       </Box>
       <Box sx={{ px: 2 }}>
@@ -274,7 +241,7 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "itemName", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: 0.6 }}
             />
             <TextField
               size="small"
@@ -283,9 +250,9 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "weight", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: 0.6 }}
             />
-            <FormControl size="small" sx={{ flex: .4 }}>
+            <FormControl size="small" sx={{ flex: 0.4 }}>
               <InputLabel>Unit</InputLabel>
               <Select
                 value={item.unit}
@@ -306,7 +273,7 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "amount", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: 0.6 }}
             />
             <TextField
               size="small"
@@ -315,7 +282,7 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: 0.6 }}
             />
             <TextField
               size="small"
@@ -324,17 +291,18 @@ const AddNewOrderModal = ({ onClose }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "rate", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: 0.6 }}
             />
-            {array.length > 1 && <IconButton
-              onClick={() => deleteOrderItem(index)}
-              color="error"
-              sx={{ px: 0 }}
-            >
-              <DeleteIcon />
-            </IconButton>}
+            {array.length > 1 && (
+              <IconButton
+                onClick={() => deleteOrderItem(index)}
+                color="error"
+                sx={{ px: 0 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
           </Box>
-
         ))}
 
         <Button
@@ -347,93 +315,107 @@ const AddNewOrderModal = ({ onClose }) => {
         </Button>
       </Box>
       <Box sx={{ px: 2, mt: 4 }}>
-        {/* Aligned Bottom Fields */}
-        <Grid mt={2}
-          container
-          spacing={1}
+        {/* GST Row */}
+        <Box
+          display="flex"
+          gap={2}
+          alignItems="center"
+          justifyContent="space-between"
+          flexWrap="wrap"
         >
-          <Grid container item size={9} spacing={1} gap={1}>
+          {/* Left Side: GST Inputs */}
+          <Box display="flex" 
+          gap={2} alignItems="center" flexWrap="wrap">
+            {/* GST Type */}
+            <FormControl sx={{ minWidth: 160 }} size="small">
+              <InputLabel>GST Type</InputLabel>
+              <Select
+                size="small"
+                name="gstType"
+                value={orderData.gstType}
+                onChange={handleChange}
+                label="GST Type"
+              >
+                {gstOptions.map((opt) => (
+                  <MenuItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
 
-            <Grid item size={12} display={"flex"} gap={1}>
-              {/* GST Type */}
-              <FormControl sx={{ minWidth: 150 }} size="small">
-                <InputLabel>GST Type</InputLabel>
-                <Select
-                  size="small"
-                  name="gstType"
-                  value={orderData.gstType}
-                  onChange={handleChange}
-                  label="GST Type"
-                >
-                  {gstOptions.map((opt) => (
-                    <MenuItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-
-              {/* GST Inputs */}
-              {orderData.gstType === "igst" ? (
-                <TextField
-                  label="IGST %"
-                  name="igst"
-                  value={orderData.igst}
-                  onChange={handleChange}
-                  size="small"
-                  sx={{ width: 120 }}
-                />
-              ) : (
-                <>
-                  <TextField
-                    label="SGST %"
-                    name="sgst"
-                    value={orderData.sgst}
-                    onChange={handleChange}
-                    size="small"
-                    sx={{ width: 120 }}
-                  />
-                  <TextField
-                    label="CGST %"
-                    name="cgst"
-                    value={orderData.cgst}
-                    onChange={handleChange}
-                    size="small"
-                    sx={{ width: 120 }}
-                  />
-                </>
-              )}
+            {/* Conditional GST Fields */}
+            {orderData.gstType === "igst" ? (
               <TextField
-                label="GST Amount"
-                name="amount"
-                value={orderData.amount}
+                label="IGST %"
+                name="igst"
+                value={orderData.igst}
                 onChange={handleChange}
                 size="small"
                 sx={{ width: 120 }}
               />
-            </Grid>
-            {/* Freight */}
+            ) : (
+              <>
+                <TextField
+                  label="SGST %"
+                  name="sgst"
+                  value={orderData.sgst}
+                  onChange={handleChange}
+                  size="small"
+                  sx={{ width: 120 }}
+                />
+                <TextField
+                  label="CGST %"
+                  name="cgst"
+                  value={orderData.cgst}
+                  onChange={handleChange}
+                  size="small"
+                  sx={{ width: 120 }}
+                />
+              </>
+            )}
+
             <TextField
-              label="Freight"
-              name="freight"
-              value={orderData.freight}
+              label="GST Amount"
+              name="amount"
+              value={orderData.amount}
               onChange={handleChange}
               size="small"
-              sx={{ width: 150 }}
+              sx={{ width: 140 }}
             />
-          </Grid>
-          {/* Total Amount */}
-          <Grid item size={3}>
+          </Box>
+
+          {/* Right Side: Totals */}
+          <Box 
+          display="flex" 
+          flexDirection="row" 
+          gap={2}>
             <TextField
               label="Total Amount"
               name="totalAmount"
               value={orderData.totalAmount}
               onChange={handleChange}
               size="small"
-              sx={{ width: 150 }}
+              sx={{ width: 160 }}
             />
-          </Grid>
-        </Grid>
+            <TextField
+              label="Freight"
+              name="freight"
+              value={orderData.freight}
+              onChange={handleChange}
+              size="small"
+              sx={{ width: 160 }}
+            />
+            <TextField
+              label="Advance"
+              name="advance"
+              value={orderData.advance}
+              onChange={handleChange}
+              size="small"
+              sx={{ width: 160 }}
+            />
+          </Box>
+        </Box>
       </Box>
 
       <DialogActions sx={{ padding: "16px" }}>
@@ -444,7 +426,7 @@ const AddNewOrderModal = ({ onClose }) => {
           Save Order
         </Button>
       </DialogActions>
-    </Drawer >
+    </Drawer>
   );
 };
 
