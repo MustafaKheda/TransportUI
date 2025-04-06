@@ -10,7 +10,7 @@ import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 
 const menuItems = [
   { text: "Orders", icon: <ShoppingCartIcon />, path: "/dashboard" },
-  { text: "Daily Report", icon: <LocalShippingIcon />, path: "/trucksdetails" },
+  { text: "Daily Report", icon: <LocalShippingIcon />, path: "/daily-report" },
   { text: "Branches", icon: <BusinessIcon />, path: "/branchesdetails" },
   { text: "Users", icon: <PeopleIcon />, path: "/usersdetails" },
   { text: "Truck", icon: <LocalShippingIcon />, path: "/trucksdetails" },

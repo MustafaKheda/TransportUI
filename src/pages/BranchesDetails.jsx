@@ -2,7 +2,7 @@ import React from 'react'
 
 function BranchesDetails() {
   return (
-    <div>BranchesDetails</div>
+    <div>Comming Soon...</div>
   )
 }
 

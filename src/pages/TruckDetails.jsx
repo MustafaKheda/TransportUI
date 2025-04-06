@@ -2,7 +2,7 @@ import React from 'react'
 
 function TruckDetails() {
   return (
-    <div>TruckDetails</div>
+    <div>Comming Soon</div>
   )
 }
 
