@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DriverAutocomplete from "./DriverSelectorBox";
+import UserAutocompleteFields from "./AddNewUser";
 
 const locationList = ["New York", "Los Angeles", "Chicago", "Houston"];
 
@@ -114,6 +115,11 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
       />
+       <UserAutocompleteFields 
+       usersname={usersname} 
+       orderData={orderData}
+       setOrderData={setOrderData}
+       />
       <Box
         sx={{
           display: "grid",
@@ -122,26 +128,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           padding: 2,
         }}
       >
-        <Autocomplete
-          size="small"
-          options={usersname}
-          renderInput={(params) => (
-            <TextField {...params} label="Consigner" fullWidth />
-          )}
-          onChange={(e, value) =>
-            setOrderData({ ...orderData, consigner: value })
-          }
-        />
-        <Autocomplete
-          size="small"
-          options={usersname}
-          renderInput={(params) => (
-            <TextField {...params} label="Consignee" fullWidth />
-          )}
-          onChange={(e, value) =>
-            setOrderData({ ...orderData, consignee: value })
-          }
-        />
         <TextField
           label="GSTIN"
           name="consignergstin"
