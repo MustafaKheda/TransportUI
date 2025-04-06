@@ -1,111 +1,79 @@
 import React, { useState } from "react";
-import {
-  Autocomplete,
-  TextField,
-  Button,
-  Box,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-} from "@mui/material";
+import { TextField, Autocomplete, Box } from "@mui/material";
 
-const DriverSelector = () => {
+const DriverAutocomplete = () => {
   const [drivers, setDrivers] = useState([
-    { name: "John Doe", phone: "1234567890" },
-    { name: "Jane Smith", phone: "9876543210" },
+    { name: "John Doe", phone: "123-456-7890" },
+    { name: "Jane Smith", phone: "987-654-3210" },
+    { name: "Alex Johnson", phone: "555-123-4567" },
   ]);
 
-  const [orderData, setOrderData] = useState({
-    driverName: "",
-    driverPhone: "",
-  });
+  const [selectedDriver, setSelectedDriver] = useState(null);
+  const [inputValue, setInputValue] = useState("");
 
-  const [openDialog, setOpenDialog] = useState(false);
-  const [newDriverName, setNewDriverName] = useState("");
-  const [newDriverPhone, setNewDriverPhone] = useState("");
-
-  const handleAddDriver = () => {
-    const trimmedName = newDriverName.trim();
-    const trimmedPhone = newDriverPhone.trim();
-    if (trimmedName && trimmedPhone) {
-      const newDriver = { name: trimmedName, phone: trimmedPhone };
-      setDrivers((prev) => [...prev, newDriver]);
-      setOrderData({
-        driverName: trimmedName,
-        driverPhone: trimmedPhone,
-      });
-    }
-    setOpenDialog(false);
-    setNewDriverName("");
-    setNewDriverPhone("");
-  };
-
-  const handleDriverChange = (event, newValue) => {
-    if (!newValue) return;
-
-    const foundDriver = drivers.find((d) => d.name === newValue);
-    if (foundDriver) {
-      setOrderData({
-        driverName: foundDriver.name,
-        driverPhone: foundDriver.phone,
-      });
+  const handleSelect = (event, newValue) => {
+    if (typeof newValue === "string") {
+      // User typed a new name and hit Enter
+      const existing = drivers.find((d) => d.name === newValue);
+      if (existing) {
+        setSelectedDriver(existing);
+      } else {
+        const newDriver = { name: newValue, phone: "" };
+        setDrivers((prev) => [...prev, newDriver]);
+        setSelectedDriver(newDriver);
+      }
+    } else if (newValue) {
+      // Selected from list
+      setSelectedDriver(newValue);
     } else {
-      // Driver not found — open dialog with the entered name
-      setNewDriverName(newValue);
-      setNewDriverPhone(""); // reset phone
-      setOpenDialog(true);
+      // Cleared
+      setSelectedDriver(null);
     }
   };
 
   return (
-    <Box>
-      <Autocomplete
-        freeSolo
-        options={drivers.map((d) => d.name)}
-        value={orderData.driverName || ""}
-        onChange={(e, newValue) => handleDriverChange(e, newValue)}
-        renderInput={(params) => (
-          <TextField
-            {...params}
-            label="Select or Add Driver"
-            fullWidth
-          />
-        )}
-      />
+    <Box sx={{ display: "flex", width: "100%", gap: 3 }}>
+      <Box sx={{ flex: 1 }}>
+        <Autocomplete
+          freeSolo
+          options={drivers}
+          getOptionLabel={(option) =>
+            typeof option === "string" ? option : option.name
+          }
+          value={selectedDriver}
+          inputValue={inputValue}
+          onInputChange={(e, newInputValue) => setInputValue(newInputValue)}
+          onChange={handleSelect}
+          renderInput={(params) => (
+            <TextField {...params} label="Driver Name" variant="outlined" fullWidth />
+          )}
+        />
+      </Box>
 
-      {/* Add Driver Dialog */}
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>Add New Driver</DialogTitle>
-        <DialogContent>
-          <TextField
-            label="Driver Name"
-            value={newDriverName || ""}
-            onChange={(e) => setNewDriverName(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-          <TextField
-            label="Driver Phone"
-            value={newDriverPhone || ""}
-            onChange={(e) => setNewDriverPhone(e.target.value)}
-            fullWidth
-            margin="dense"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button
-            onClick={handleAddDriver}
-            variant="contained"
-            color="primary"
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <Box sx={{ flex: 1 }}>
+        <TextField
+          label="Phone Number"
+          variant="outlined"
+          fullWidth
+          value={selectedDriver?.phone || ""}
+          onChange={(e) => {
+            if (selectedDriver) {
+              const updatedDriver = {
+                ...selectedDriver,
+                phone: e.target.value,
+              };
+              setSelectedDriver(updatedDriver);
+              setDrivers((prev) =>
+                prev.map((d) =>
+                  d.name === selectedDriver.name ? updatedDriver : d
+                )
+              );
+            }
+          }}
+        />
+      </Box>
     </Box>
   );
 };
 
-export default DriverSelector;
+export default DriverAutocomplete;
