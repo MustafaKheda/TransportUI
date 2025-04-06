@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
-  credentials: "include", 
+  credentials: "include",
 });
 
 // Intercept 401 errors and attempt token refresh
@@ -27,4 +27,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+export { api };

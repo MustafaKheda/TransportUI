@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../api/authStore";
+import { api } from "../api/apihandler";
 
 function LoginPage() {
   const { email, password, setEmail, setPassword, resetCredentials } = useAuthStore();
@@ -25,11 +26,11 @@ function LoginPage() {
     setError('');
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
+      const response = await api.post(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
         email,
         password
       });
-      console.log("response:-",response)
+      console.log("response:-", response)
       resetCredentials();
       // Redirect to dashboard
       navigate("/dashboard");
@@ -94,9 +95,8 @@ function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full ${
-                loading ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-600"
-              } text-white py-2 rounded-md text-lg font-medium transition duration-300`}
+              className={`w-full ${loading ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-600"
+                } text-white py-2 rounded-md text-lg font-medium transition duration-300`}
             >
               {loading ? "Logging in..." : "Login"}
             </button>
