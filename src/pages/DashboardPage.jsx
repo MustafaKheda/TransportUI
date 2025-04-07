@@ -16,38 +16,55 @@ import MenuIcon from "@mui/icons-material/Menu";
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
-import {api} from "../api/apihandler";
+import { api } from "../api/apihandler";
 
 
 export default function DashboardPage() {
   const [selected, setSelected] = useState("Orders");
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [ordermetadata,setOrderMetaData] = useState({})
+  const [ordermetadata, setOrderMetaData] = useState({})
   const handleSelect = (selection) => setSelected(selection);
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(!isModalOpen);
 
   const orders = [
-    { orderId: "001", customerName: "Order A", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
-    { orderId: "002", customerName: "Order B", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
-    { orderId: "003", customerName: "Order C", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
+    { id: "1", orderId: "001", customerName: "Order A", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
+    { id: "2", orderId: "002", customerName: "Order B", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
+    { id: "3", orderId: "003", customerName: "Order C", pickup: "Delhi", dropoff: "Mumbai", items: 10, trucknum: "DL06IN2025", amount: 10000 },
   ];
 
   const getOrderformData = async () => {
     try {
-      const response = await api.get(`${import.meta.env.VITE_BASE_URL}/orders/meta`)
+      const response = await api.get(`/orders/meta`)
       setOrderMetaData(response.data)
     } catch (error) {
-      console.log("error consoling:-",error)
+      console.log("error consoling:-", error)
     }
   }
 
   useEffect(() => {
     getOrderformData();
-  },[])
-  
+  }, [])
+  const handleDownload = async (id) => {
+    const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
+    console.log(response)
+    const pdfBlob = response.data;
+    const pdfUrl = URL.createObjectURL(pdfBlob);
+    printPdf(pdfUrl)
+  }
+  const printPdf = (pdfUrl) => {
+    const printWindow = window.open(pdfUrl, "_blank");
+    if (printWindow) {
+      printWindow.onload = () => {
+        printWindow.focus();
+        printWindow.print();
+      };
+    } else {
+      console.error('Failed to open print window');
+    }
+  };
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
 
@@ -87,7 +104,7 @@ export default function DashboardPage() {
                     <TableCell>{order.trucknum}</TableCell>
                     <TableCell>{order.amount}</TableCell>
                     <TableCell>
-                      <IconButton color="primary">
+                      <IconButton onClick={() => handleDownload(order.id)} color="primary">
                         <EditIcon />
                       </IconButton>
                       <Button color="error" variant="contained" size="small" startIcon={<CancelIcon />}>
