@@ -55,7 +55,7 @@ export default function DashboardPage() {
     printPdf(pdfUrl)
   }
   const printPdf = (pdfUrl) => {
-    const printWindow = window.open(pdfUrl, "_blank");
+    const printWindow = window.open(pdfUrl);
     if (printWindow) {
       printWindow.onload = () => {
         printWindow.focus();
