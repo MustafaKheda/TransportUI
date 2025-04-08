@@ -26,7 +26,7 @@ function LoginPage() {
     setError('');
 
     try {
-      const response = await api.post(`${import.meta.env.VITE_BASE_URL}/auth/login`, {
+      const response = await api.post(`/auth/login`, {
         email,
         password
       });

@@ -20,12 +20,8 @@ import { api } from "../api/apihandler";
 
 
 export default function DashboardPage() {
-  const [selected, setSelected] = useState("Orders");
-  const [drawerOpen, setDrawerOpen] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [ordermetadata, setOrderMetaData] = useState({})
-  const handleSelect = (selection) => setSelected(selection);
-  const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(!isModalOpen);
 
@@ -37,15 +33,26 @@ export default function DashboardPage() {
 
   const getOrderformData = async () => {
     try {
+
       const response = await api.get(`/orders/meta`)
       setOrderMetaData(response.data)
     } catch (error) {
       console.log("error consoling:-", error)
     }
   }
-  console.log(ordermetadata)
+  const getOrders = async () => {
+    try {
+
+      const response = await api.get(`/orders`)
+      console.log(response)
+      set
+    } catch (error) {
+      console.log("error consoling:-", error)
+    }
+  }
+
   useEffect(() => {
-    getOrderformData();
+    Promise.all([getOrderformData(), getOrders()])
   }, [])
   const handleDownload = async (id) => {
     const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
@@ -72,51 +79,49 @@ export default function DashboardPage() {
 
         {/* Header with Add New Button */}
         <div style={{ display: "flex", justifyContent: "space-between", width: "100%", alignItems: "center" }}>
-          <h1 className="text-2xl pb-3">{selected}</h1>
+          <h1 className="text-2xl pb-3"> Orders </h1>
           <Button className="cursor-pointer" variant="contained" color="primary" onClick={handleOpenModal}>
             Add New
           </Button>
         </div>
 
-        {selected === "Orders" && (
-          <TableContainer component={Paper} elevation={3} style={{ width: "100%", marginTop: 8 }}>
-            <Table>
-              <TableHead>
-                <TableRow style={{ backgroundColor: "#f5f5f5" }}>
-                  <TableCell><strong>Order ID</strong></TableCell>
-                  <TableCell><strong>Customer Name</strong></TableCell>
-                  <TableCell><strong>Pickup</strong></TableCell>
-                  <TableCell><strong>Dropoff</strong></TableCell>
-                  <TableCell><strong>Items</strong></TableCell>
-                  <TableCell><strong>Truck Number</strong></TableCell>
-                  <TableCell><strong>Amount</strong></TableCell>
-                  <TableCell><strong>Actions</strong></TableCell>
+        <TableContainer component={Paper} elevation={3} style={{ width: "100%", marginTop: 8 }}>
+          <Table>
+            <TableHead>
+              <TableRow style={{ backgroundColor: "#f5f5f5" }}>
+                <TableCell><strong>Order ID</strong></TableCell>
+                <TableCell><strong>Customer Name</strong></TableCell>
+                <TableCell><strong>Pickup</strong></TableCell>
+                <TableCell><strong>Dropoff</strong></TableCell>
+                <TableCell><strong>Items</strong></TableCell>
+                <TableCell><strong>Truck Number</strong></TableCell>
+                <TableCell><strong>Amount</strong></TableCell>
+                <TableCell><strong>Actions</strong></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.orderId}>
+                  <TableCell>{order.orderId}</TableCell>
+                  <TableCell>{order.customerName}</TableCell>
+                  <TableCell>{order.pickup}</TableCell>
+                  <TableCell>{order.dropoff}</TableCell>
+                  <TableCell>{order.items}</TableCell>
+                  <TableCell>{order.trucknum}</TableCell>
+                  <TableCell>{order.amount}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={() => handleDownload(order.id)} color="primary">
+                      <EditIcon />
+                    </IconButton>
+                    <Button color="error" variant="contained" size="small" startIcon={<CancelIcon />}>
+                      Cancel
+                    </Button>
+                  </TableCell>
                 </TableRow>
-              </TableHead>
-              <TableBody>
-                {orders.map((order) => (
-                  <TableRow key={order.orderId}>
-                    <TableCell>{order.orderId}</TableCell>
-                    <TableCell>{order.customerName}</TableCell>
-                    <TableCell>{order.pickup}</TableCell>
-                    <TableCell>{order.dropoff}</TableCell>
-                    <TableCell>{order.items}</TableCell>
-                    <TableCell>{order.trucknum}</TableCell>
-                    <TableCell>{order.amount}</TableCell>
-                    <TableCell>
-                      <IconButton onClick={() => handleDownload(order.id)} color="primary">
-                        <EditIcon />
-                      </IconButton>
-                      <Button color="error" variant="contained" size="small" startIcon={<CancelIcon />}>
-                        Cancel
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       </div>
 
       {/* Add New Order Modal */}

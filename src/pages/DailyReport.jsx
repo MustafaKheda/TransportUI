@@ -26,15 +26,10 @@ export default function OrdersFilterTable() {
                     trucks: filters.trucks,
                 }).toString();
 
-                const res = await fetch(
-                    `http://localhost:8000/api/orders/daily-report?${query}`,
-                    {
-                        credentials: "include", // 👈 this is essential
-                    }
-                );
-                console.log()
-                if (!res.ok) throw new Error("Failed to fetch data");
-                const data = await res.json();
+                const res = await api.get(
+                    `/orders/daily-report?${query}`,);
+
+                const data = res.data;
                 console.log(data)
                 // 🔍 Extract unique values
                 const truckNumbers = [...new Set(data.map(order => order.truck?.truckNumber).filter(Boolean))];

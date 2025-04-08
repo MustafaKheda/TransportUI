@@ -27,7 +27,7 @@ const DriverAutocomplete = ({ driverInfo }) => {
   const [openModal, setOpenModal] = useState(false);
   const [newDriverName, setNewDriverName] = useState("");
   const [newPhoneNumber, setNewPhoneNumber] = useState("");
-
+  console.log(driverInfo)
   // // Prefill selectedDriver if driverInfo is provided
   // useEffect(() => {
   //   if (driverInfo?.length > 0) {
@@ -69,7 +69,7 @@ const DriverAutocomplete = ({ driverInfo }) => {
         <Box sx={{ flex: 1 }}>
           <Autocomplete
             freeSolo
-            options={drivers}
+            options={driverInfo}
             getOptionLabel={(option) =>
               typeof option === "string" ? option : option.name || ""
             }
@@ -95,18 +95,10 @@ const DriverAutocomplete = ({ driverInfo }) => {
             fullWidth
             value={selectedDriver?.phoneNumber || ""}
             onChange={(e) => {
-              if (selectedDriver) {
-                const updatedDriver = {
-                  ...selectedDriver,
-                  phoneNumber: e.target.value,
-                };
-                setSelectedDriver(updatedDriver);
-                setDrivers((prev) =>
-                  prev.map((d) =>
-                    d.name === selectedDriver.name ? updatedDriver : d
-                  )
-                );
-              }
+              setSelectedDriver((prev) => ({
+                ...prev,
+                phoneNumber: e.target.value
+              }))
             }}
           />
         </Box>

@@ -43,7 +43,7 @@ export default function FreeSoloCreateOptionDialog() {
                 size='small'
                 fullWidth
                 onChange={(event, newValue) => {
-                    console.log(newValue)
+
                     if (typeof newValue === 'string') {
                         // timeout to avoid instant validation of the dialog's form.
                         setTimeout(() => {

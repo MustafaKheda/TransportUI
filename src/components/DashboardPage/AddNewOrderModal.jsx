@@ -17,11 +17,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
 
-const locationList = ["New York", "Los Angeles", "Chicago", "Houston"];
+const locationList = ["Udaipur", "Bikaner", "Jaipur", "Delhi"];
 
 const AddNewOrderModal = ({ onClose, ordermetadata }) => {
-  console.log("data:-", ordermetadata);
-
   const userlocation = ordermetadata?.userLoction
     ? Array.isArray(ordermetadata.userLoction)
       ? ordermetadata.userLoction
@@ -64,6 +62,16 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     amount: "",
     totalAmount: "",
   });
+  const [invoice, setInvoice] = useState({
+    gst: 0,
+    gstType: 0,
+    igst: 0,
+    sgst: 0,
+    cgst: 0,
+    amount: 0,
+    freight: 0,
+    extraCharges: 0
+  })
   const [newCustomer, setNewCustomer] = useState(null)
   const users = useMemo(() => {
     const baseCustomers = ordermetadata?.customers || [];
@@ -71,7 +79,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
   }, [ordermetadata, newCustomer]);
   const handleCustomer = (value, type, isNew) => {
     isNew && setNewCustomer(value)
-    console.log(value, type)
     if (type === "consigner") {
       setOrderData((prev) => ({
         ...prev,
@@ -88,7 +95,33 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       }))
     }
   }
-  console.log(orderData)
+  const handleClose = () => {
+    setOrderData({
+      consignmentNo: "",
+      consigner: "",
+      consignee: "",
+      consignergstin: "",
+      consigneegstin: "",
+      consignerId: "",
+      consigneeId: "",
+      from: "",
+      to: "",
+      truckNumber: "",
+      driverName: "",
+      driverPhone: "",
+      items: "",
+      gst: "",
+      totalrate: "",
+      freight: "",
+      gstType: "",
+      igst: "",
+      sgst: "",
+      cgst: "",
+      amount: "",
+      totalAmount: "",
+    })
+    onClose()
+  }
   const [orderItems, setOrderItems] = useState([
     { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
   ]);
@@ -206,14 +239,14 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           label="From Location"
           size="small"
           fullWidth
-          value={orderData.from || ordermetadata?.userLoction || ""}
+          value={ordermetadata?.userLoction || ""}
           onChange={(e) => setOrderData({ ...orderData, from: e.target.value })}
-          disabled
+          InputProps={{ readOnly: true }}
         />
 
         <Autocomplete
           size="small"
-          options={userlocation}
+          options={ordermetadata?.locationList}
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth />
           )}
@@ -289,7 +322,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
             </FormControl>
             <TextField
               size="small"
-              label="Qnt"
+              label="Qty"
               value={item.qnt}
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
@@ -422,7 +455,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
       {/* Bottom Actions */}
       <DialogActions sx={{ px: 2, py: 2 }}>
-        <Button onClick={onClose} color="error" variant="outlined">
+        <Button onClick={handleClose} color="error" variant="outlined">
           Cancel
         </Button>
         <Button variant="contained" color="primary">

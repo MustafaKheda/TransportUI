@@ -180,7 +180,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
   const handleSubmit = async (event) => {
     try {
       event.preventDefault();
-      console.log(dialogValue)
       setLoading(true)
       const newCustomer = await api.post("/customers", { ...dialogValue })
       setValue(newCustomer?.data?.customer, name, true);
@@ -191,14 +190,12 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
 
     // handleClose();
   };
-  console.log(users)
   return (
     <>
       <Autocomplete
         fullWidth
         value={users.find(u => u.id === value) || null}
         onChange={(event, newValue) => {
-          console.log(newValue)
           if (typeof newValue === 'string') {
             // timeout to avoid instant validation of the dialog's form.
             setTimeout(() => {
@@ -219,7 +216,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
           }
         }}
         filterOptions={(options, params) => {
-          console.log(options)
           const filtered = filter(options, params);
 
           if (params.inputValue !== '') {
@@ -235,7 +231,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
         id="free-solo-dialog-demo"
         options={users}
         getOptionLabel={(option) => {
-          console.log(option)
           // for example value selected with enter, right from the input
           if (typeof option === 'string') {
             return option;
@@ -253,7 +248,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
         clearOnBlur
         handleHomeEndKeys
         renderOption={(props, option) => {
-          console.log(option)
           const { key, ...optionProps } = props;
           return (
             <li key={key} {...optionProps}>
@@ -263,7 +257,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
         }}
         freeSolo
         renderInput={(params) => {
-          console.log(params)
           return <TextField  {...params} size='small' label={name} fullWidth />
         }}
       />
