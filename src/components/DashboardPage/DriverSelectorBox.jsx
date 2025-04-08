@@ -28,14 +28,14 @@ const DriverAutocomplete = ({ driverInfo }) => {
   const [newDriverName, setNewDriverName] = useState("");
   const [newPhoneNumber, setNewPhoneNumber] = useState("");
 
-  // Prefill selectedDriver if driverInfo is provided
-  useEffect(() => {
-    if (driverInfo?.length > 0) {
-      const firstDriver = driverInfo[0];
-      setSelectedDriver(firstDriver);
-      setInputValue(firstDriver.name);
-    }
-  }, [driverInfo]);
+  // // Prefill selectedDriver if driverInfo is provided
+  // useEffect(() => {
+  //   if (driverInfo?.length > 0) {
+  //     const firstDriver = driverInfo[0];
+  //     setSelectedDriver(firstDriver);
+  //     setInputValue(firstDriver.name);
+  //   }
+  // }, [driverInfo]);
 
   const handleSelect = (event, newValue) => {
     if (typeof newValue === "string") {

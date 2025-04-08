@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Drawer,
   Button,
@@ -28,8 +28,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       : [ordermetadata.userLoction]
     : [];
 
-  const users = ordermetadata.customers || [];
-  const usersname = users.map((user) => user.name);
+
+
 
   const alldrivers = ordermetadata.drivers || [];
   const driverInfo = alldrivers.map((driver) => ({
@@ -46,6 +46,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     consignee: "",
     consignergstin: "",
     consigneegstin: "",
+    consignerId: "",
+    consigneeId: "",
     from: "",
     to: "",
     truckNumber: "",
@@ -62,7 +64,31 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     amount: "",
     totalAmount: "",
   });
-
+  const [newCustomer, setNewCustomer] = useState(null)
+  const users = useMemo(() => {
+    const baseCustomers = ordermetadata?.customers || [];
+    return newCustomer ? [...baseCustomers, newCustomer] : [...baseCustomers];
+  }, [ordermetadata, newCustomer]);
+  const handleCustomer = (value, type, isNew) => {
+    isNew && setNewCustomer(value)
+    console.log(value, type)
+    if (type === "consigner") {
+      setOrderData((prev) => ({
+        ...prev,
+        consigner: value?.name || "",
+        consignerId: value?.id || "",
+        consignergstin: value?.gstin || "",
+      }))
+    } else {
+      setOrderData((prev) => ({
+        ...prev,
+        consignee: value?.name || "",
+        consigneeId: value?.id || "",
+        consigneegstin: value?.gstin || "",
+      }))
+    }
+  }
+  console.log(orderData)
   const [orderItems, setOrderItems] = useState([
     { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
   ]);
@@ -80,9 +106,26 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
   const handleOrderItemChange = (index, field, value) => {
     const updatedItems = [...orderItems];
-    updatedItems[index][field] = value;
+
+    // Parse value for numeric fields
+    if (["qnt", "rate"].includes(field)) {
+      updatedItems[index][field] = parseFloat(value) || "";
+    } else {
+      updatedItems[index][field] = value;
+    }
+
+    const qnt = parseFloat(updatedItems[index].qnt);
+    const rate = parseFloat(updatedItems[index].rate);
+
+    if (!isNaN(qnt) && !isNaN(rate)) {
+      updatedItems[index].amount = (qnt * rate).toFixed(2);
+    } else {
+      updatedItems[index].amount = "";
+    }
+
     setOrderItems(updatedItems);
   };
+
 
   const deleteOrderItem = (index) => {
     const updatedItems = orderItems.filter((_, i) => i !== index);
@@ -115,11 +158,28 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
         onChange={handleChange}
         InputLabelProps={{ shrink: true }}
       />
-       <UserAutocompleteFields 
-       usersname={usersname} 
-       orderData={orderData}
-       setOrderData={setOrderData}
-       />
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 2,
+          paddingX: 2,
+          paddingTop: 2,
+        }}
+      >
+        <UserAutocompleteFields
+          users={users}
+          name="consigner"
+          value={orderData.consignerId}
+          setValue={handleCustomer}
+        />
+        <UserAutocompleteFields
+          users={users}
+          name="consignee"
+          value={orderData.consigneeId}
+          setValue={handleCustomer}
+        />
+      </Box>
       <Box
         sx={{
           display: "grid",
@@ -132,17 +192,15 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           label="GSTIN"
           name="consignergstin"
           value={orderData.consignergstin}
-          onChange={handleChange}
           size="small"
-          disabled
+          aria-readonly
         />
         <TextField
           label="GSTIN"
           name="consigneegstin"
           value={orderData.consigneegstin}
-          onChange={handleChange}
           size="small"
-          disabled
+          aria-readonly
         />
         <TextField
           label="From Location"
@@ -205,7 +263,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "itemName", e.target.value)
               }
-              sx={{ flex: 0.6 }}
             />
             <TextField
               size="small"
@@ -214,7 +271,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "weight", e.target.value)
               }
-              sx={{ flex: 0.6 }}
+              sx={{ flex: .5 }}
             />
             <FormControl size="small" sx={{ flex: 0.4 }}>
               <InputLabel>Unit</InputLabel>
@@ -232,21 +289,12 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
             </FormControl>
             <TextField
               size="small"
-              label="Amount"
-              value={item.amount}
-              onChange={(e) =>
-                handleOrderItemChange(index, "amount", e.target.value)
-              }
-              sx={{ flex: 0.6 }}
-            />
-            <TextField
-              size="small"
               label="Qnt"
               value={item.qnt}
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
               }
-              sx={{ flex: 0.6 }}
+              sx={{ flex: .5 }}
             />
             <TextField
               size="small"
@@ -255,9 +303,18 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "rate", e.target.value)
               }
-              sx={{ flex: 0.6 }}
+              sx={{ flex: .5 }}
             />
-            {array.length > 1 && (
+            <TextField
+              size="small"
+              label="Amount"
+              value={item.amount}
+              onChange={(e) =>
+                handleOrderItemChange(index, "amount", e.target.value)
+              }
+              sx={{ flex: .6 }}
+            />
+            {orderItems.length > 1 && (
               <IconButton
                 onClick={() => deleteOrderItem(index)}
                 color="error"
