@@ -157,7 +157,6 @@ import { Box } from '@mui/material';
 const filter = createFilterOptions();
 
 export default function UserAutocompleteFields({ users, value, setValue, name }) {
-  // const [value, setValue] = React.useState(null);
   const [open, toggleOpen] = React.useState(false);
 
   const handleClose = () => {

@@ -148,42 +148,42 @@ import {
 
 const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
   const [selectedDriver, setSelectedDriver] = useState(null);
-  const [inputValue, setInputValue] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  // const [inputValue, setInputValue] = useState("");
+  // const [phoneNumber, setPhoneNumber] = useState("");
 
 
-  const handleSelect = (event, newValue) => {
-    let name = "";
-    let phone = "";
-    if (typeof newValue === "string") {
-      name = newValue;
-    } else if (newValue?.name) {
-      name = newValue.name;
-      phone = newValue.phoneNumber || "";
-    }
-    setSelectedDriver({ name, phoneNumber: phone });
-    setPhoneNumber(phone);
-    setInputValue(name);
+  // const handleSelect = (event, newValue) => {
+  //   let name = "";
+  //   let phone = "";
+  //   if (typeof newValue === "string") {
+  //     name = newValue;
+  //   } else if (newValue?.name) {
+  //     name = newValue.name;
+  //     phone = newValue.phoneNumber || "";
+  //   }
+  //   setSelectedDriver({ name, phoneNumber: phone });
+  //   setPhoneNumber(phone);
+  //   setInputValue(name);
 
-    setOrderData((prev) => ({
-      ...prev,
-      driverName: name,
-      driverPhone: phone,
-    }));
-  };
-  useEffect(() => {
-    if (selectedDriver) {
-      setOrderData((prev) => ({
-        ...prev,
-        driverName: selectedDriver.name || "",
-        driverPhone: selectedDriver.phoneNumber || "",
-      }));
-    }
-  }, [selectedDriver]);
+  //   setOrderData((prev) => ({
+  //     ...prev,
+  //     driverName: name,
+  //     driverPhone: phone,
+  //   }));
+  // };
+  // useEffect(() => {
+  //   if (selectedDriver) {
+  //     setOrderData((prev) => ({
+  //       ...prev,
+  //       driverName: selectedDriver.name || "",
+  //       driverPhone: selectedDriver.phoneNumber || "",
+  //     }));
+  //   }
+  // }, [selectedDriver]);
   return (
     <Box sx={{ display: "flex", width: "100%", gap: 3 }}>
       <Box sx={{ flex: 1 }}>
-        <Autocomplete
+        {/* <Autocomplete
           freeSolo
           options={driverInfo}
           getOptionLabel={(option) =>
@@ -208,6 +208,29 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
               fullWidth
             />
           )}
+        /> */}
+        <TextField
+          label="Driver Name"
+          variant="outlined"
+          fullWidth
+          size="small"
+          name="driverName"
+          value={orderData.driverName}
+          onChange={(e) => {
+            // const newPhone = e.target.value;
+            // setPhoneNumber(newPhone);
+
+            // setSelectedDriver((prev) => ({
+            //   ...prev,
+            //   name: inputValue,
+            //   phoneNumber: newPhone,
+            // }));
+
+            setOrderData((prev) => ({
+              ...prev,
+              driverName: e.target.value,
+            }));
+          }}
         />
       </Box>
 
@@ -216,21 +239,22 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
           label="Phone Number"
           variant="outlined"
           fullWidth
-          value={phoneNumber}
+          name="driverPhone"
+          size="small"
+          value={orderData.driverPhone}
           onChange={(e) => {
-            const newPhone = e.target.value;
-            setPhoneNumber(newPhone);
+            // const newPhone = e.target.value;
+            // setPhoneNumber(newPhone);
 
-            setSelectedDriver((prev) => ({
-              ...prev,
-              name: inputValue,
-              phoneNumber: newPhone,
-            }));
+            // setSelectedDriver((prev) => ({
+            //   ...prev,
+            //   name: inputValue,
+            //   phoneNumber: newPhone,
+            // }));
 
             setOrderData((prev) => ({
               ...prev,
-              driverName: inputValue,
-              driverPhone: newPhone,
+              driverPhone: e.target.value,
             }));
           }}
         />

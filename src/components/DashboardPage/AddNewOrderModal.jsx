@@ -36,8 +36,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     phoneNumber: driver.phoneNumber,
   }));
 
-  const alltrucks = ordermetadata.trucks || [];
-
+  const alltrucks = ordermetadata.trucks?.map((item) => item.truckNumber) || [];
+  console.log(alltrucks)
   const [orderData, setOrderData] = useState({
     date: new Date().toISOString().split("T")[0],
     consigner: "",
@@ -396,14 +396,40 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
         <Autocomplete
           size="small"
+          freeSolo
           options={ordermetadata?.locationList}
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth />
           )}
-          onChange={(e, value) => setOrderData({ ...orderData, dropoffLocation: value })}
+          onInputChange={(e, value) => {
+            console.log(e.target, value)
+            setOrderData({ ...orderData, dropoffLocation: value })
+          }}
+
+          onChange={(e, value) => {
+            console.log(e.target, value)
+            setOrderData({ ...orderData, dropoffLocation: value })
+          }}
         />
         <Box sx={{ display: "flex", gap: 2, gridColumn: "span 2" }}>
-          <Select
+          <Autocomplete
+            size="small"
+            freeSolo
+            options={alltrucks}
+            sx={{ flex: 1, minWidth: 170 }}
+            renderInput={(params) => (
+              <TextField {...params} label="Truck Number" fullWidth />
+            )}
+            onInputChange={(e, value) => {
+              console.log(e.target, value)
+              setOrderData({ ...orderData, truckNumber: value })
+            }}
+            onChange={(e, value) => {
+              console.log(e.target, value)
+              setOrderData({ ...orderData, truckNumber: value })
+            }}
+          />
+          {/* <Select
             size="small"
             name="truckNumber"
             value={orderData.truckNumber}
@@ -420,7 +446,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
                 {truck.truckNumber}
               </MenuItem>
             ))}
-          </Select>
+          </Select> */}
           <DriverAutocomplete
             driverInfo={driverInfo}
             setOrderData={setOrderData}
