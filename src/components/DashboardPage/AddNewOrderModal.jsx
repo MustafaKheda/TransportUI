@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Drawer,
   Button,
@@ -16,6 +16,7 @@ import {
 import DeleteIcon from "@mui/icons-material/Delete";
 import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
+import { api } from "../../api/apihandler";
 
 const locationList = ["Udaipur", "Bikaner", "Jaipur", "Delhi"];
 
@@ -39,51 +40,46 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
   const [orderData, setOrderData] = useState({
     date: new Date().toISOString().split("T")[0],
-    consignmentNo: "",
     consigner: "",
     consignee: "",
     consignergstin: "",
     consigneegstin: "",
-    consignerId: "",
+    consignorId: "",
     consigneeId: "",
-    from: "",
-    to: "",
+    pickupLocation: ordermetadata?.userLoction || "",
+    dropoffLocation: "",
     truckNumber: "",
     driverName: "",
     driverPhone: "",
-    items: "",
-    gst: "",
-    totalrate: "",
-    freight: "",
-    gstType: "",
-    igst: "",
-    sgst: "",
-    cgst: "",
-    amount: "",
-    totalAmount: "",
   });
   const [invoice, setInvoice] = useState({
     gst: 0,
-    gstType: 0,
+    gstType: "igst",
     igst: 0,
     sgst: 0,
     cgst: 0,
     amount: 0,
     freight: 0,
-    extraCharges: 0
+    extraCharge: 0,
+    advance: 0,
+    totalAmount: 0,
+    balance: 0,
   })
   const [newCustomer, setNewCustomer] = useState(null)
+  const [orderItems, setOrderItems] = useState([
+    { itemName: "", weight: 0, unit: "", amount: 0, qnt: 0, rate: 0 },
+  ]);
   const users = useMemo(() => {
     const baseCustomers = ordermetadata?.customers || [];
     return newCustomer ? [...baseCustomers, newCustomer] : [...baseCustomers];
   }, [ordermetadata, newCustomer]);
   const handleCustomer = (value, type, isNew) => {
     isNew && setNewCustomer(value)
-    if (type === "consigner") {
+    if (type === "consignor") {
       setOrderData((prev) => ({
         ...prev,
         consigner: value?.name || "",
-        consignerId: value?.id || "",
+        consignorId: value?.id || "",
         consignergstin: value?.gstin || "",
       }))
     } else {
@@ -95,67 +91,119 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       }))
     }
   }
-  const handleClose = () => {
+  const handleClose = (isCreated = false) => {
     setOrderData({
-      consignmentNo: "",
       consigner: "",
       consignee: "",
       consignergstin: "",
       consigneegstin: "",
-      consignerId: "",
+      consignorId: "",
       consigneeId: "",
-      from: "",
-      to: "",
+      pickupLocation: "",
+      dropoffLocation: "",
       truckNumber: "",
       driverName: "",
       driverPhone: "",
-      items: "",
-      gst: "",
-      totalrate: "",
-      freight: "",
-      gstType: "",
-      igst: "",
-      sgst: "",
-      cgst: "",
-      amount: "",
-      totalAmount: "",
     })
-    onClose()
+    setOrderItems([{ itemName: "", weight: 0, unit: "", amount: 0, qnt: 0, rate: 0 }])
+    setInvoice({
+      gst: 0,
+      gstType: "igst",
+      igst: 0,
+      sgst: 0,
+      cgst: 0,
+      amount: 0,
+      freight: 0,
+      extraCharge: 0,
+      advance: 0,
+      totalAmount: 0,
+      balance: 0,
+    })
+    onClose(isCreated)
   }
-  const [orderItems, setOrderItems] = useState([
-    { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
-  ]);
+
 
   const handleChange = (e) => {
     setOrderData({ ...orderData, [e.target.name]: e.target.value });
   };
 
+  const handleInvoiceChange = (e) => {
+    setInvoice((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    if (e.target.name === "advance") {
+      const advance = parseFloat(e.target.value) || 0
+      setInvoice((prev) => ({
+        ...prev,
+        balance: prev.totalAmount - advance
+      }))
+    }
+  }
+
   const addOrderItem = () => {
     setOrderItems([
       ...orderItems,
-      { itemName: "", weight: "", unit: "", amount: "", qnt: "", rate: "" },
+      { itemName: "", weight: 0, unit: "", amount: 0, qnt: 0, rate: 0 },
     ]);
   };
 
+  useEffect(() => {
+    const itemsTotal = orderItems.reduce((total, item) => {
+      const amount = parseFloat(item.amount);
+      return total + (isNaN(amount) ? 0 : amount);
+    }, 0);
+
+    setInvoice((prev) => ({
+      ...prev,
+      amount: itemsTotal,
+    }));
+  }, [orderItems]);
+
+  useEffect(() => {
+    const baseAmount = parseFloat(invoice.amount) || 0;
+    const freight = parseFloat(invoice.freight) || 0;
+    const extraCharge = parseFloat(invoice.extraCharge) || 0
+    const advance = parseFloat(invoice.advance) || 0
+
+    let gstValue = 0;
+    if (invoice.gstType === "igst") {
+      gstValue = baseAmount * (parseFloat(invoice.igst) || 0) / 100;
+    } else {
+      const sgst = baseAmount * (parseFloat(invoice.sgst) || 0) / 100;
+      const cgst = baseAmount * (parseFloat(invoice.cgst) || 0) / 100;
+      gstValue = sgst + cgst;
+    }
+
+    setInvoice((prev) => ({
+      ...prev,
+      gst: gstValue,
+      totalAmount: (baseAmount + freight + gstValue + extraCharge),
+      balance: (baseAmount + freight + gstValue + extraCharge - advance),
+    }));
+  }, [invoice.amount, invoice.freight, invoice.gstType, invoice.igst, invoice.sgst, invoice.cgst, invoice.gst, invoice.extraCharge, invoice.advance]);
+
+  useEffect(() => {
+    if (orderData.pickupLocation) return
+    setOrderData((prev) => ({
+      ...prev,
+      pickupLocation: ordermetadata?.userLoction,
+    }))
+  }, [orderData.pickupLocation, ordermetadata?.userLoction])
   const handleOrderItemChange = (index, field, value) => {
     const updatedItems = [...orderItems];
+    const item = { ...updatedItems[index] };
 
-    // Parse value for numeric fields
-    if (["qnt", "rate"].includes(field)) {
-      updatedItems[index][field] = parseFloat(value) || "";
+    if (field === "qnt" || field === "rate") {
+      const parsedValue = parseFloat(value);
+      item[field] = isNaN(parsedValue) ? "" : parsedValue;
+
+      const qnt = parseFloat(item.qnt);
+      const rate = parseFloat(item.rate);
+
+      item.amount = !isNaN(qnt) && !isNaN(rate) ? (qnt * rate).toFixed(2) : "";
     } else {
-      updatedItems[index][field] = value;
+      item[field] = value;
     }
 
-    const qnt = parseFloat(updatedItems[index].qnt);
-    const rate = parseFloat(updatedItems[index].rate);
-
-    if (!isNaN(qnt) && !isNaN(rate)) {
-      updatedItems[index].amount = (qnt * rate).toFixed(2);
-    } else {
-      updatedItems[index].amount = "";
-    }
-
+    updatedItems[index] = item;
     setOrderItems(updatedItems);
   };
 
@@ -169,6 +217,108 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     { value: "igst", label: "IGST" },
     { value: "sgst_cgst", label: "SGST + CGST" },
   ];
+
+  const handleSubmit = async () => {
+    const fieldErrors = {};
+
+    // Required fields
+    const requiredFields = [
+      { key: "consigner", label: "Consigner" },
+      { key: "consignee", label: "Consignee" },
+      { key: "pickupLocation", label: "Pickup Location" },
+      { key: "dropoffLocation", label: "Dropoff Location" },
+      { key: "truckNumber", label: "Truck Number" },
+      { key: "driverName", label: "Driver Name" },
+      { key: "driverPhone", label: "Driver Phone" }
+    ];
+
+    requiredFields.forEach(({ key, label }) => {
+      if (!orderData[key]?.toString().trim()) {
+        fieldErrors[key] = `${label} is required`;
+      }
+    });
+
+    // Invoice percentage fields
+    if (invoice.gstType === "igst") {
+      const igstVal = parseFloat(invoice.igst);
+      if (isNaN(igstVal) || igstVal < 0 || igstVal > 100) {
+        fieldErrors["invoice.igst"] = "IGST must be between 0 and 100";
+      }
+    } else {
+      const sgstVal = parseFloat(invoice.sgst);
+      const cgstVal = parseFloat(invoice.cgst);
+      if (isNaN(sgstVal) || sgstVal < 0 || sgstVal > 100) {
+        fieldErrors["invoice.sgst"] = "SGST must be between 0 and 100";
+      }
+      if (isNaN(cgstVal) || cgstVal < 0 || cgstVal > 100) {
+        fieldErrors["invoice.cgst"] = "CGST must be between 0 and 100";
+      }
+    }
+
+    // General invoice numbers
+    ["gst", "amount", "freight", "extraCharge", "advance"].forEach((key) => {
+      const value = parseFloat(invoice[key]);
+      if (isNaN(value) || value < 0) {
+        fieldErrors[`invoice.${key}`] = `${key} must be a non-negative number`;
+      }
+    });
+
+    // Order Items
+    if (orderItems.length === 0) {
+      fieldErrors["orderItems"] = "At least one order item is required";
+    }
+
+    orderItems.forEach((item, index) => {
+      if (!item.itemName?.trim()) {
+        fieldErrors[`orderItems[${index}].itemName`] = `Item ${index + 1}: Name is required`;
+      }
+      if (!item.unit?.trim()) {
+        fieldErrors[`orderItems[${index}].unit`] = `Item ${index + 1}: Unit is required`;
+      }
+      if (!item.qnt || item.qnt <= 0) {
+        fieldErrors[`orderItems[${index}].qnt`] = `Item ${index + 1}: Quantity must be > 0`;
+      }
+      if (!item.rate || item.rate <= 0) {
+        fieldErrors[`orderItems[${index}].rate`] = `Item ${index + 1}: Rate must be > 0`;
+      }
+    });
+
+    // Handle errors
+    if (Object.keys(fieldErrors).length > 0) {
+      console.log("Field errors:", fieldErrors);
+      // Optional: Set in state to display in UI
+      // setFormErrors(fieldErrors);
+      return;
+    }
+
+    // ✅ If no errors, proceed
+    const payload = {
+      ...orderData,
+      driver: {
+        name: orderData.driverName.trim(),
+        phoneNumber: orderData.driverPhone.trim(),
+      },
+      invoice: {
+        ...invoice,
+        gstType: invoice.gst > 0 ? invoice.gstType : null,
+        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : null
+      },
+      orderItems
+    };
+    try {
+      console.log("Validated Payload", payload);
+      const response = await api.post("/orders", { ...payload })
+      console.log(response)
+      if (response.status === 201) {
+        handleClose(true)
+      }
+    } catch (error) {
+      console.error(error, "error while creating order")
+    }
+
+
+    // Send payload to server
+  };
 
   return (
     <Drawer
@@ -202,8 +352,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       >
         <UserAutocompleteFields
           users={users}
-          name="consigner"
-          value={orderData.consignerId}
+          name="consignor"
+          value={orderData.consignorId}
           setValue={handleCustomer}
         />
         <UserAutocompleteFields
@@ -239,8 +389,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           label="From Location"
           size="small"
           fullWidth
-          value={ordermetadata?.userLoction || ""}
-          onChange={(e) => setOrderData({ ...orderData, from: e.target.value })}
+          value={orderData?.pickupLocation || ""}
+          // onChange={(e) => setOrderData({ ...orderData, pickupLocation: e.target.value })}
           InputProps={{ readOnly: true }}
         />
 
@@ -250,7 +400,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth />
           )}
-          onChange={(e, value) => setOrderData({ ...orderData, to: value })}
+          onChange={(e, value) => setOrderData({ ...orderData, dropoffLocation: value })}
         />
         <Box sx={{ display: "flex", gap: 2, gridColumn: "span 2" }}>
           <Select
@@ -317,7 +467,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               >
                 <MenuItem value="KG">KG</MenuItem>
                 <MenuItem value="LITER">LITER</MenuItem>
-                <MenuItem value="PER UNIT">PER UNIT</MenuItem>
+                <MenuItem value="UNIT">PER UNIT</MenuItem>
               </Select>
             </FormControl>
             <TextField
@@ -327,7 +477,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
               }
-              sx={{ flex: .5 }}
+              sx={{ flex: .3 }}
             />
             <TextField
               size="small"
@@ -336,7 +486,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "rate", e.target.value)
               }
-              sx={{ flex: .5 }}
+              sx={{ flex: .3 }}
             />
             <TextField
               size="small"
@@ -345,7 +495,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "amount", e.target.value)
               }
-              sx={{ flex: .6 }}
+              sx={{ flex: .4 }}
             />
             {orderItems.length > 1 && (
               <IconButton
@@ -368,97 +518,115 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
         </Button>
       </Box>
 
-      <Box sx={{ px: 2, mt: 4 }}>
-        <Box
-          display="flex"
-          gap={2}
-          alignItems="center"
-          justifyContent="space-between"
-          flexWrap="wrap"
-        >
-          <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
-            <FormControl sx={{ minWidth: 160 }} size="small">
-              <InputLabel>GST Type</InputLabel>
-              <Select
-                size="small"
-                name="gstType"
-                value={orderData.gstType}
-                onChange={handleChange}
-                label="GST Type"
-              >
-                {gstOptions.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+      <Box display="flex" px={2} flexDirection="column" alignItems={"end"} gap={2}>
+        <TextField
+          label="Freight"
+          name="freight"
+          value={invoice.freight}
+          onChange={handleInvoiceChange}
+          size="small"
+          sx={{ width: 160 }}
+          type="number"
+        />
+        <TextField
+          label="Extra Charge"
+          name="extraCharge"
+          value={invoice.extraCharge}
+          onChange={handleInvoiceChange}
+          size="small"
+          sx={{ width: 160 }}
+          type="number"
+        />
 
-            {orderData.gstType === "igst" ? (
+
+        <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+          <FormControl sx={{ minWidth: 100 }} size="small">
+            <InputLabel>GST Type</InputLabel>
+            <Select
+              size="small"
+              name="gstType"
+              value={invoice.gstType}
+              onChange={handleInvoiceChange}
+              label="GST Type"
+            >
+              {gstOptions.map((opt) => (
+                <MenuItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {invoice.gstType === "igst" ? (
+            <TextField
+              label="IGST %"
+              name="igst"
+              value={invoice.igst}
+              onChange={handleInvoiceChange}
+              size="small"
+              sx={{ width: 60 }}
+              type="number"
+
+            />
+          ) : (
+            <>
               <TextField
-                label="IGST %"
-                name="igst"
-                value={orderData.igst}
-                onChange={handleChange}
+                label="SGST %"
+                name="sgst"
+                value={invoice.sgst}
+                onChange={handleInvoiceChange}
                 size="small"
-                sx={{ width: 120 }}
+                sx={{ width: 60 }}
+                type="number"
               />
-            ) : (
-              <>
-                <TextField
-                  label="SGST %"
-                  name="sgst"
-                  value={orderData.sgst}
-                  onChange={handleChange}
-                  size="small"
-                  sx={{ width: 120 }}
-                />
-                <TextField
-                  label="CGST %"
-                  name="cgst"
-                  value={orderData.cgst}
-                  onChange={handleChange}
-                  size="small"
-                  sx={{ width: 120 }}
-                />
-              </>
-            )}
-            <TextField
-              label="GST Amount"
-              name="amount"
-              value={orderData.amount}
-              onChange={handleChange}
-              size="small"
-              sx={{ width: 140 }}
-            />
-          </Box>
-          <Box display="flex" flexDirection="row" gap={2}>
-            <TextField
-              label="Total Amount"
-              name="totalAmount"
-              value={orderData.totalAmount}
-              onChange={handleChange}
-              size="small"
-              sx={{ width: 160 }}
-            />
-            <TextField
-              label="Freight"
-              name="freight"
-              value={orderData.freight}
-              onChange={handleChange}
-              size="small"
-              sx={{ width: 160 }}
-            />
-          </Box>
+              <TextField
+                label="CGST %"
+                name="cgst"
+                value={invoice.cgst}
+                onChange={handleInvoiceChange}
+                size="small"
+                sx={{ width: 60 }}
+                type="number"
+              />
+            </>
+          )}
+          <TextField
+            label="GST Amount"
+            name="gst"
+            value={invoice.gst}
+            onChange={handleInvoiceChange}
+            size="small"
+            sx={{ width: 140 }}
+          />
         </Box>
+
+
+        <TextField
+          label="Advance"
+          name="advance"
+          value={invoice.advance}
+          onChange={handleInvoiceChange}
+          size="small"
+          sx={{ width: 160 }}
+        />
+        <TextField
+          label="Balance"
+          name="balance"
+          value={invoice.balance}
+          size="small"
+          onChange={handleInvoiceChange}
+          sx={{ width: 160 }}
+        />
+
       </Box>
 
+
       {/* Bottom Actions */}
-      <DialogActions sx={{ px: 2, py: 2 }}>
+      <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
         <Button onClick={handleClose} color="error" variant="outlined">
           Cancel
         </Button>
-        <Button variant="contained" color="primary">
+        <Button onClick={handleSubmit} variant="contained" color="primary">
           Submit Order
         </Button>
       </DialogActions>
