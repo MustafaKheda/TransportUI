@@ -17,6 +17,8 @@
     "@mui/styled-engine-sc": "^7.0.1",
     "@tailwindcss/vite": "^4.1.1",
     "axios": "^1.8.4",
+    "html2pdf.js": "^0.10.3",
+    "mustache": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.1",

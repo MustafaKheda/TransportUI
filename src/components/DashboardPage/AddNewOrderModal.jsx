@@ -17,9 +17,53 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
 import { api } from "../../api/apihandler";
-
-const locationList = ["Udaipur", "Bikaner", "Jaipur", "Delhi"];
-
+import { generatePDF } from "../../utils/Pdf";
+const data = {
+  branch: {
+    name: "Main Branch",
+    location: "City Center",
+    address: "123 Main St",
+    contact: "9876543210",
+    gstin: "29ABCDE1234F2Z5"
+  },
+  orderInfo: {
+    createdAt: "2025-04-09",
+    orderNumber: "INV-00123",
+    pickup: "Warehouse A",
+    dropoff: "Shop B"
+  },
+  customer: {
+    consignor: {
+      name: "John Doe",
+      address: "123 Sender St",
+      gstin: "22AAAAA0000A1Z5",
+      contact: "9999988888"
+    },
+    consignee: {
+      name: "Jane Smith",
+      address: "456 Receiver Ave",
+      gstin: "33BBBBB1111B2Z6",
+      contact: "7777766666"
+    }
+  },
+  truck: {
+    number: "MH12AB1234",
+    driver: "Ramesh",
+    phone: "8888888888"
+  },
+  items: [
+    { name: "Item A", weight: "50", unit: "kg", quantity: 2, rate: 100, amount: 200 },
+    { name: "Item B", weight: "20", unit: "kg", quantity: 1, rate: 150, amount: 150 }
+  ],
+  invoice: {
+    freight: 350,
+    gst: 63,
+    extraCharge: 20,
+    totalAmount: 433,
+    advance: 100,
+    balance: 333
+  }
+};
 const AddNewOrderModal = ({ onClose, ordermetadata }) => {
   const userlocation = ordermetadata?.userLoction
     ? Array.isArray(ordermetadata.userLoction)
@@ -52,6 +96,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     driverName: "",
     driverPhone: "",
   });
+  const [formErrors, setFormErrors] = useState({})
   const [invoice, setInvoice] = useState({
     gst: 0,
     gstType: "igst",
@@ -217,8 +262,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     { value: "igst", label: "IGST" },
     { value: "sgst_cgst", label: "SGST + CGST" },
   ];
-
-  const handleSubmit = async () => {
+  const handleValidate = () => {
     const fieldErrors = {};
 
     // Required fields
@@ -238,22 +282,22 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       }
     });
 
-    // Invoice percentage fields
-    if (invoice.gstType === "igst") {
-      const igstVal = parseFloat(invoice.igst);
-      if (isNaN(igstVal) || igstVal < 0 || igstVal > 100) {
-        fieldErrors["invoice.igst"] = "IGST must be between 0 and 100";
-      }
-    } else {
-      const sgstVal = parseFloat(invoice.sgst);
-      const cgstVal = parseFloat(invoice.cgst);
-      if (isNaN(sgstVal) || sgstVal < 0 || sgstVal > 100) {
-        fieldErrors["invoice.sgst"] = "SGST must be between 0 and 100";
-      }
-      if (isNaN(cgstVal) || cgstVal < 0 || cgstVal > 100) {
-        fieldErrors["invoice.cgst"] = "CGST must be between 0 and 100";
-      }
-    }
+    // // Invoice percentage fields
+    // if (invoice.gstType === "igst") {
+    //   const igstVal = parseFloat(invoice.igst);
+    //   if (isNaN(igstVal) || igstVal < 0 || igstVal > 100) {
+    //     fieldErrors["invoice.igst"] = "IGST must be between 0 and 100";
+    //   }
+    // } else {
+    //   const sgstVal = parseFloat(invoice.sgst);
+    //   const cgstVal = parseFloat(invoice.cgst);
+    //   if (isNaN(sgstVal) || sgstVal < 0 || sgstVal > 100) {
+    //     fieldErrors["invoice.sgst"] = "SGST must be between 0 and 100";
+    //   }
+    //   if (isNaN(cgstVal) || cgstVal < 0 || cgstVal > 100) {
+    //     fieldErrors["invoice.cgst"] = "CGST must be between 0 and 100";
+    //   }
+    // }
 
     // General invoice numbers
     ["gst", "amount", "freight", "extraCharge", "advance"].forEach((key) => {
@@ -287,9 +331,14 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     if (Object.keys(fieldErrors).length > 0) {
       console.log("Field errors:", fieldErrors);
       // Optional: Set in state to display in UI
-      // setFormErrors(fieldErrors);
-      return;
+      setFormErrors(fieldErrors);
+      return true;
     }
+    return false
+  }
+
+  const handleSubmit = async () => {
+    if (handleValidate()) return
 
     // ✅ If no errors, proceed
     const payload = {
@@ -310,15 +359,25 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       const response = await api.post("/orders", { ...payload })
       console.log(response)
       if (response.status === 201) {
-        handleClose(true)
+        // handleClose(true)
+        alert("Order Saved")
+        return true
       }
     } catch (error) {
       console.error(error, "error while creating order")
+      return false
     }
 
 
     // Send payload to server
   };
+  const handleDownloadPDF = async () => {
+    // const isSave = await handleSubmit();
+    // if (isSave) {
+
+    generatePDF(data)
+    // }
+  }
 
   return (
     <Drawer
@@ -653,8 +712,12 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           Cancel
         </Button>
         <Button onClick={handleSubmit} variant="contained" color="primary">
-          Submit Order
+          Save
         </Button>
+        <Button onClick={handleDownloadPDF} variant="contained" color="primary">
+          Save And Download
+        </Button>
+
       </DialogActions>
     </Drawer>
   );

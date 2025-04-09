@@ -40,6 +40,7 @@ function LoginPage() {
     }
   };
 
+
   return (
     <div className="flex h-screen">
       {/* Left Side - Background Image */}

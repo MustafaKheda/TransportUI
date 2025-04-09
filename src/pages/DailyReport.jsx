@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { api } from "../api/apihandler";
 
 export default function OrdersFilterTable() {
     const [ordersData, setOrdersData] = useState([]);
@@ -61,15 +62,10 @@ export default function OrdersFilterTable() {
                     trucks: filters.trucks,
                 }).toString();
 
-                const res = await fetch(
-                    `http://localhost:8000/api/orders/daily-report?${query}`,
-                    {
-                        credentials: "include", // 👈 this is essential
-                    }
+                const res = await api(
+                    `orders/daily-report?${query}`,
                 );
-                console.log()
-                if (!res.ok) throw new Error("Failed to fetch data");
-                const data = await res.json();
+                const data = res.data
                 console.log(data)
                 // 🔍 Extract unique values
                 const truckNumbers = [...new Set(data.map(order => order.truck?.truckNumber).filter(Boolean))];
