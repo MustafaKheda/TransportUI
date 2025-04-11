@@ -13,7 +13,7 @@ const RouteConfig = () => {
       {/* Login page without Layout */}
       <Route path="/" element={<LoginPage />} />
       {/* All other routes with Layout */}
-      <Route element={<Layout />}>
+      <Route  element={<Layout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/branchesdetails" element={<BranchesDetails />} />
         <Route path="/usersdetails" element={<UserDetails />} />
