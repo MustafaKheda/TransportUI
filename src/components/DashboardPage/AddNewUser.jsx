@@ -193,15 +193,15 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
     <>
       <Autocomplete
         fullWidth
-        value={users.find(u => u.id === value) || null}
+        value={users.find((u) => u.id === value) || null}
         onChange={(event, newValue) => {
-          if (typeof newValue === 'string') {
+          if (typeof newValue === "string") {
             // timeout to avoid instant validation of the dialog's form.
             setTimeout(() => {
               toggleOpen(true);
               setDialogValue({
                 name: newValue,
-                year: '',
+                year: "",
               });
             });
           } else if (newValue && newValue.inputValue) {
@@ -217,7 +217,7 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
         filterOptions={(options, params) => {
           const filtered = filter(options, params);
 
-          if (params.inputValue !== '') {
+          if (params.inputValue !== "") {
             filtered.push({
               inputValue: params.inputValue,
               name: `Add "${params.inputValue}"`,
@@ -231,10 +231,10 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
         options={users}
         getOptionLabel={(option) => {
           // for example value selected with enter, right from the input
-          if (typeof option === 'string') {
+          if (typeof option === "string") {
             return option;
           }
-          if (typeof option === 'number') {
+          if (typeof option === "number") {
             return users.f;
           }
           if (option.inputValue) {
@@ -242,7 +242,6 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
           }
           return option.name;
         }}
-
         selectOnFocus
         clearOnBlur
         handleHomeEndKeys
@@ -261,13 +260,18 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
       />
       <Dialog open={open} onClose={handleClose}>
         <form onSubmit={handleSubmit}>
-          <DialogTitle>Add New {name === "consigner" ? "Consigner" : "Consignee"}</DialogTitle>
+          <DialogTitle>
+            Add New {name === "consigner" ? "Consigner" : "Consignee"}
+          </DialogTitle>
           <DialogContent>
             <TextField
               label="Name"
               value={dialogValue.name}
               fullWidth
               disabled
+              onSubmit={(e) =>
+                setDialogValue((prev) => ({ ...prev, name: e.target.value }))
+              }
               onChange={(e) =>
                 setDialogValue((prev) => ({ ...prev, name: e.target.value }))
               }
@@ -276,6 +280,9 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
             <TextField
               label="Contact"
               value={dialogValue.contact}
+              onSubmit={(e) =>
+                setDialogValue((prev) => ({ ...prev, name: e.target.value }))
+              }
               onChange={(e) =>
                 setDialogValue((prev) => ({ ...prev, contact: e.target.value }))
               }
@@ -302,13 +309,13 @@ export default function UserAutocompleteFields({ users, value, setValue, name, .
             />
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
             <Button type="submit">Add</Button>
+            <Button onClick={handleClose}>Cancel</Button>
           </DialogActions>
         </form>
       </Dialog>
-    </ >
-  )
+    </>
+  );
 }
 
 // Top 100 films as rated by IMDb users. http://www.imdb.com/chart/top

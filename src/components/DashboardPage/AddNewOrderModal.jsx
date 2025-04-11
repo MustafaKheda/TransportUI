@@ -435,8 +435,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       },
       invoice: {
         ...invoice,
-        gstType: invoice.gst > 0 ? invoice.gstType : null,
-        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : null
+        gstType: invoice.gst > 0 ? invoice.gstType : '',
+        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : ''
       },
       orderItems
     };
@@ -486,11 +486,14 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       anchor="right"
       open
       sx={{
-        width: 1200,
+        // width: "100%",
         flexShrink: 0,
-        "& .MuiDrawer-paper": { width: 1200, zIndex: 1200 },
-      }}
-    >
+        "& .MuiDrawer-paper": {
+          width: "80%",
+          zIndex: 1200,
+          backgroundColor: "white",
+        },
+      }}>
       <TextField
         size="small"
         sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
@@ -508,8 +511,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           gap: 2,
           paddingX: 2,
           paddingTop: 2,
-        }}
-      >
+        }}>
         <UserAutocompleteFields
           users={users}
           name="consignor"
@@ -533,8 +535,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           gridTemplateColumns: "1fr 1fr",
           gap: 2,
           padding: 2,
-        }}
-      >
+        }}>
         <TextField
           label="GSTIN"
           name="consignorgstin"
@@ -572,7 +573,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
             setFormErrors({ ...formErrors, dropoffLocation: null })
             setOrderData({ ...orderData, dropoffLocation: value })
           }}
-
           onChange={(e, value) => {
             setFormErrors({ ...formErrors, dropoffLocation: null })
             setOrderData({ ...orderData, dropoffLocation: value })
@@ -660,7 +660,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "weight", e.target.value)
               }
-              sx={{ flex: .5 }}
+              sx={{ flex: 0.5 }}
             />
             <FormControl size="small" sx={{ flex: 0.4 }}>
               <InputLabel>Unit</InputLabel>
@@ -671,8 +671,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
                 onChange={(e) =>
                   handleOrderItemChange(index, "unit", e.target.value)
                 }
-                label="Unit"
-              >
+                label="Unit">
                 <MenuItem value="KG">KG</MenuItem>
                 <MenuItem value="LITER">LITER</MenuItem>
                 <MenuItem value="UNIT">PER UNIT</MenuItem>
@@ -687,7 +686,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
               }
-              sx={{ flex: .3 }}
+              sx={{ flex: 0.3 }}
             />
             <TextField
               size="small"
@@ -698,7 +697,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "rate", e.target.value)
               }
-              sx={{ flex: .3 }}
+              sx={{ flex: 0.3 }}
             />
             <TextField
               size="small"
@@ -707,14 +706,13 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "amount", e.target.value)
               }
-              sx={{ flex: .4 }}
+              sx={{ flex: 0.4 }}
             />
             {orderItems.length > 1 && (
               <IconButton
                 onClick={() => deleteOrderItem(index)}
                 color="error"
-                sx={{ px: 0 }}
-              >
+                sx={{ px: 0 }}>
                 <DeleteIcon />
               </IconButton>
             )}
@@ -724,13 +722,17 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           variant="outlined"
           onClick={addOrderItem}
           size="small"
-          sx={{ mt: 1 }}
-        >
+          sx={{ mt: 1 }}>
           + Add Item
         </Button>
       </Box>
 
-      <Box display="flex" px={2} flexDirection="column" alignItems={"end"} gap={2}>
+      <Box
+        display="flex"
+        px={2}
+        flexDirection="column"
+        alignItems={"end"}
+        gap={2}>
         <TextField
           label="Freight"
           name="freight"
@@ -750,7 +752,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           type="number"
         />
 
-
         <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
           <FormControl sx={{ minWidth: 100 }} size="small">
             <InputLabel>GST Type</InputLabel>
@@ -759,8 +760,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               name="gstType"
               value={invoice.gstType}
               onChange={handleInvoiceChange}
-              label="GST Type"
-            >
+              label="GST Type">
               {gstOptions.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -778,7 +778,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               size="small"
               sx={{ width: 60 }}
               type="number"
-
             />
           ) : (
             <>
@@ -812,7 +811,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           />
         </Box>
 
-
         <TextField
           label="Advance"
           name="advance"
@@ -829,25 +827,28 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           onChange={handleInvoiceChange}
           sx={{ width: 160 }}
         />
-
       </Box>
 
-
       {/* Bottom Actions */}
-      <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
-        <Button onClick={handleClose} color="error" variant="outlined">
-          Cancel
-        </Button>
-        <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
-          Save
-        </Button>
-        <Button onClick={handleDownloadPDF} variant="contained" color="primary">
-          Save And Download
-        </Button>
+<<<<<<< HEAD
+  <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
 
-      </DialogActions>
-    </Drawer>
-  );
+    <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
+=======
+
+
+>>>>>>> UserIntigration
+      Save
+    </Button>
+    <Button onClick={handleDownloadPDF} variant="contained" color="primary">
+      Save And Download
+    </Button>
+    <Button onClick={handleClose} color="error" variant="outlined">
+      Cancel
+    </Button>
+  </DialogActions>
+    </Drawer >
+    );
 };
 
 export default AddNewOrderModal;

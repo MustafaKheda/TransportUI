@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogActions,
@@ -8,8 +8,23 @@ import {
   Button,
   Box,
 } from "@mui/material";
-
+import { api } from '../../api/apihandler';
 const UserModal = ({ open, handleClose, editData, handleChange, handleSave }) => {
+
+  const [orderData,setOrderMetaData]=useState([])
+  const getOrderformData = async () => {
+    try {
+      const response = await api.get(`${import.meta.env.VITE_BASE_URL}/branch`);
+      console.log(response, "these are the branches");
+      setOrderMetaData(response.data.branches);
+    } catch (error) {
+      console.log("error consoling:-", error);
+    }
+  };
+console.log(orderData, "orderData");
+  useEffect(() => {
+    getOrderformData();
+  }, []);
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
       <DialogTitle>Edit User</DialogTitle>
