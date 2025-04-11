@@ -830,25 +830,19 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       </Box>
 
       {/* Bottom Actions */}
-<<<<<<< HEAD
-  <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
-
-    <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
-=======
-
-
->>>>>>> UserIntigration
-      Save
-    </Button>
-    <Button onClick={handleDownloadPDF} variant="contained" color="primary">
-      Save And Download
-    </Button>
-    <Button onClick={handleClose} color="error" variant="outlined">
-      Cancel
-    </Button>
-  </DialogActions>
+      <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
+        <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
+          Save
+        </Button>
+        <Button onClick={handleDownloadPDF} variant="contained" color="primary">
+          Save And Download
+        </Button>
+        <Button onClick={handleClose} color="error" variant="outlined">
+          Cancel
+        </Button>
+      </DialogActions>
     </Drawer >
-    );
+  );
 };
 
 export default AddNewOrderModal;
