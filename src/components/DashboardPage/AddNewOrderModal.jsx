@@ -18,61 +18,12 @@ import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
 import { api } from "../../api/apihandler";
 import { generatePDF } from "../../utils/Pdf";
-const data = {
-  branch: {
-    name: "Main Branch",
-    location: "City Center",
-    address: "123 Main St",
-    contact: "9876543210",
-    gstin: "29ABCDE1234F2Z5"
-  },
-  orderInfo: {
-    createdAt: "2025-04-09",
-    orderNumber: "INV-00123",
-    pickup: "Warehouse A",
-    dropoff: "Shop B"
-  },
-  customer: {
-    consignor: {
-      name: "John Doe",
-      address: "123 Sender St",
-      gstin: "22AAAAA0000A1Z5",
-      contact: "9999988888"
-    },
-    consignee: {
-      name: "Jane Smith",
-      address: "456 Receiver Ave",
-      gstin: "33BBBBB1111B2Z6",
-      contact: "7777766666"
-    }
-  },
-  truck: {
-    number: "MH12AB1234",
-    driver: "Ramesh",
-    phone: "8888888888"
-  },
-  items: [
-    { name: "Item A", weight: "50", unit: "kg", quantity: 2, rate: 100, amount: 200 },
-    { name: "Item B", weight: "20", unit: "kg", quantity: 1, rate: 150, amount: 150 }
-  ],
-  invoice: {
-    freight: 350,
-    gst: 63,
-    extraCharge: 20,
-    totalAmount: 433,
-    advance: 100,
-    balance: 333
-  }
-};
 const AddNewOrderModal = ({ onClose, ordermetadata }) => {
   const alldrivers = ordermetadata.drivers || [];
   const driverInfo = alldrivers.map((driver) => ({
     name: driver.name,
     phoneNumber: driver.phoneNumber,
   }));
-
-  const alltrucks = ordermetadata.trucks?.map((item) => item.truckNumber) || [];
-  console.log(alltrucks)
   const [orderData, setOrderData] = useState({
     date: new Date().toISOString().split("T")[0],
     consignor: "",
@@ -114,6 +65,15 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     return newCustomer ? [...baseCustomers, newCustomer] : [...baseCustomers];
   }, [ordermetadata, newCustomer]);
 
+  const alltrucks = useMemo(() => {
+    const trucks = new Set(ordermetadata.trucks?.map(item => item.truckNumber));
+    if (savedOrder?.order?.truck?.truckNumber) {
+      trucks.add(savedOrder.order?.truck?.truckNumber);
+    }
+    console.log(trucks)
+    return Array.from(trucks);
+  }, [ordermetadata.trucks, savedOrder]);
+
   const formatOrderForPDF = (order) => {
     return {
       orderInfo: {
@@ -146,10 +106,9 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
   };
   const pdfData = useCallback((savedOrder) => {
     const { branch } = ordermetadata
-    console.log(savedOrder)
+
 
     const order = savedOrder?.order ? formatOrderForPDF(savedOrder?.order) : null
-    console.log(order)
     const data = {
       branch,
       orderInfo: order?.orderInfo,
@@ -176,9 +135,10 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
         balance: parseInt(savedOrder?.invoice?.totalAmount - savedOrder?.invoice?.advance)
       }
     };
-    console.log(data)
     return data
   }, [ordermetadata.branch])
+
+  console.log(savedOrder)
 
   const handleCustomer = (value, type, isNew) => {
     isNew && setNewCustomer(value)
@@ -284,7 +244,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     }))
   }, [orderData.pickupLocation, ordermetadata?.userLoction])
   const handleOrderItemChange = (index, field, value) => {
-    console.log(`orderItems[${index}].${field}`)
     setFormErrors({ ...formErrors, [`orderItems[${index}].${field}`]: null })
     const updatedItems = [...orderItems];
     const item = { ...updatedItems[index] };
@@ -339,7 +298,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       balance: 0,
     })
   };
-  console.log(formErrors)
   const gstOptions = [
     { value: "igst", label: "IGST" },
     { value: "sgst_cgst", label: "SGST + CGST" },
@@ -411,7 +369,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
     // Handle errors
     if (Object.keys(fieldErrors).length > 0) {
-      console.log("Field errors:", fieldErrors);
       // Optional: Set in state to display in UI
       setFormErrors(fieldErrors);
       return true;
@@ -421,7 +378,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
   const handleSubmit = async (isFromPDF = false) => {
     if (savedOrder && isFromPDF) {
-      console.log(savedOrder, isFromPDF)
       return savedOrder
     }
     if (handleValidate()) return
@@ -435,14 +391,15 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       },
       invoice: {
         ...invoice,
-        gstType: invoice.gst > 0 ? invoice.gstType : null,
-        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : null
+        gstType: invoice.gst > 0 ? invoice.gstType : '',
+        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : ''
       },
       orderItems
     };
 
     try {
       console.log("Validated Payload", payload);
+      setSavedOrder(null)
       const response = await api.post("/orders", { ...payload })
       setSavedOrder({ ...response.data, orderItems: payload.orderItems, })
       console.log(response)
@@ -478,7 +435,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
     // }
   }
-  console.log(orderData)
   const getError = (key) => formErrors[key] || ""
   return (
     <Drawer
@@ -486,11 +442,14 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       anchor="right"
       open
       sx={{
-        width: 1200,
+        // width: "100%",
         flexShrink: 0,
-        "& .MuiDrawer-paper": { width: 1200, zIndex: 1200 },
-      }}
-    >
+        "& .MuiDrawer-paper": {
+          width: "80%",
+          zIndex: 1200,
+          backgroundColor: "white",
+        },
+      }}>
       <TextField
         size="small"
         sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
@@ -508,8 +467,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           gap: 2,
           paddingX: 2,
           paddingTop: 2,
-        }}
-      >
+        }}>
         <UserAutocompleteFields
           users={users}
           name="consignor"
@@ -533,8 +491,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           gridTemplateColumns: "1fr 1fr",
           gap: 2,
           padding: 2,
-        }}
-      >
+        }}>
         <TextField
           label="GSTIN"
           name="consignorgstin"
@@ -572,7 +529,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
             setFormErrors({ ...formErrors, dropoffLocation: null })
             setOrderData({ ...orderData, dropoffLocation: value })
           }}
-
           onChange={(e, value) => {
             setFormErrors({ ...formErrors, dropoffLocation: null })
             setOrderData({ ...orderData, dropoffLocation: value })
@@ -660,7 +616,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "weight", e.target.value)
               }
-              sx={{ flex: .5 }}
+              sx={{ flex: 0.5 }}
             />
             <FormControl size="small" sx={{ flex: 0.4 }}>
               <InputLabel>Unit</InputLabel>
@@ -671,8 +627,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
                 onChange={(e) =>
                   handleOrderItemChange(index, "unit", e.target.value)
                 }
-                label="Unit"
-              >
+                label="Unit">
                 <MenuItem value="KG">KG</MenuItem>
                 <MenuItem value="LITER">LITER</MenuItem>
                 <MenuItem value="UNIT">PER UNIT</MenuItem>
@@ -687,7 +642,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "qnt", e.target.value)
               }
-              sx={{ flex: .3 }}
+              sx={{ flex: 0.3 }}
             />
             <TextField
               size="small"
@@ -698,7 +653,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "rate", e.target.value)
               }
-              sx={{ flex: .3 }}
+              sx={{ flex: 0.3 }}
             />
             <TextField
               size="small"
@@ -707,14 +662,13 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               onChange={(e) =>
                 handleOrderItemChange(index, "amount", e.target.value)
               }
-              sx={{ flex: .4 }}
+              sx={{ flex: 0.4 }}
             />
             {orderItems.length > 1 && (
               <IconButton
                 onClick={() => deleteOrderItem(index)}
                 color="error"
-                sx={{ px: 0 }}
-              >
+                sx={{ px: 0 }}>
                 <DeleteIcon />
               </IconButton>
             )}
@@ -724,13 +678,17 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           variant="outlined"
           onClick={addOrderItem}
           size="small"
-          sx={{ mt: 1 }}
-        >
+          sx={{ mt: 1 }}>
           + Add Item
         </Button>
       </Box>
 
-      <Box display="flex" px={2} flexDirection="column" alignItems={"end"} gap={2}>
+      <Box
+        display="flex"
+        px={2}
+        flexDirection="column"
+        alignItems={"end"}
+        gap={2}>
         <TextField
           label="Freight"
           name="freight"
@@ -750,7 +708,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           type="number"
         />
 
-
         <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
           <FormControl sx={{ minWidth: 100 }} size="small">
             <InputLabel>GST Type</InputLabel>
@@ -759,8 +716,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               name="gstType"
               value={invoice.gstType}
               onChange={handleInvoiceChange}
-              label="GST Type"
-            >
+              label="GST Type">
               {gstOptions.map((opt) => (
                 <MenuItem key={opt.value} value={opt.value}>
                   {opt.label}
@@ -778,7 +734,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
               size="small"
               sx={{ width: 60 }}
               type="number"
-
             />
           ) : (
             <>
@@ -812,7 +767,6 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           />
         </Box>
 
-
         <TextField
           label="Advance"
           name="advance"
@@ -829,24 +783,21 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           onChange={handleInvoiceChange}
           sx={{ width: 160 }}
         />
-
       </Box>
-
 
       {/* Bottom Actions */}
       <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
-        <Button onClick={handleClose} color="error" variant="outlined">
-          Cancel
-        </Button>
         <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
           Save
         </Button>
         <Button onClick={handleDownloadPDF} variant="contained" color="primary">
           Save And Download
         </Button>
-
+        <Button onClick={handleClose} color="error" variant="outlined">
+          Cancel
+        </Button>
       </DialogActions>
-    </Drawer>
+    </Drawer >
   );
 };
 

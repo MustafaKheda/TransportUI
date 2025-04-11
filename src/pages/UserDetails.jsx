@@ -1,11 +1,21 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import UsersTable from "../components/UsersDetailsPage/UsersTable";
 import { Box, Modal } from "@mui/material";
 import RegistrationForm from "../components/UsersDetailsPage/RegistrationForm";
+import { api } from "../api/apihandler";
 
 function UserDetails() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [users, setUsers] = useState([]);
+  const fetchUsers = async () => {
+    const response = await api.get(`${import.meta.env.VITE_BASE_URL}/auth`);
+    if (response.status == 200) {
+      setUsers(response.data.users);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
@@ -29,7 +39,7 @@ function UserDetails() {
 
       {/* Users Table */}
       <div className="w-full">
-        <UsersTable />
+        <UsersTable users={users} setUsers={setUsers} />
       </div>
 
       {/* Modal for Registration Form */}
@@ -46,8 +56,9 @@ function UserDetails() {
             borderRadius: 2,
             boxShadow: 24,
           }}
+
         >
-          <RegistrationForm onClose={handleCloseModal} />
+          <RegistrationForm managers={users.filter(item => [1, 2].includes(item.roleId))} onClose={handleCloseModal} />
         </Box>
       </Modal>
     </div>

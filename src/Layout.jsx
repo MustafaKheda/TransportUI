@@ -14,7 +14,7 @@ const Layout = () => {
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   return (
     <div className="flex">
-      <Drawer variant="persistent" anchor="left" open={drawerOpen}>
+      <Drawer variant="persistent" anchor="left"  open={drawerOpen}>
         <MenuDrawer
           onSelect={handleSelect}
           toggleDrawer={toggleDrawer} />
@@ -27,7 +27,7 @@ const Layout = () => {
         </IconButton>
       )}
 
-      <div style={{ marginLeft: drawerOpen ? 280 : 0, padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }} className="flex-grow p-4 ">
+      <div style={{ marginLeft: drawerOpen ? 280 : 0, padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", }} className="flex-grow p-4 ">
         <Outlet /> {/* This renders the current page component */}
       </div>
     </div>
