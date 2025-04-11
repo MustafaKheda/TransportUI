@@ -18,7 +18,7 @@ const menuItems = [
 
 const MenuDrawer = ({ toggleDrawer }) => {
   const navigate = useNavigate(); // Initialize navigation
-const [selected, setisSelected] = useState("/dashboard");
+  const [selected, setisSelected] = useState("/dashboard");
   const handleNavigation = (path) => {
     navigate(path);
     setisSelected(path)
@@ -37,7 +37,7 @@ const [selected, setisSelected] = useState("/dashboard");
         flexShrink: 0,
         "& .MuiDrawer-paper": {
           width: 270,
-          backgroundColor: "rgb(149, 212, 254)",
+          // backgroundColor: "rgb(149, 212, 254)",
         },
       }}>
       {/* Top Section */}
@@ -60,7 +60,7 @@ const [selected, setisSelected] = useState("/dashboard");
             button
             key={text}
             onClick={() => handleNavigation(path)}
-            className="cursor-pointer"
+            className="cursor-pointer border-b border-b-gray-300"
             style={{
               backgroundColor:
                 selected == path ? "rgb(161, 239, 165)" : "rgba(0,0,0,0)",

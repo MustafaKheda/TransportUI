@@ -13,12 +13,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import UserModal from "./UserModal";
 import { api } from "../../api/apihandler";
+const UsersTable = ({ users, setUsers }) => {
 
-const UsersTable = ({users,setUsers}) => {
-  
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState(null);
-  
+
 
   const handleEdit = (user) => {
     setEditData(user);
@@ -67,7 +66,7 @@ const UsersTable = ({users,setUsers}) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            
+
             {users.map((user) => (
               <TableRow key={user.id}>
                 <TableCell style={{ borderRight: "1px solid #ccc" }}>
@@ -80,7 +79,7 @@ const UsersTable = ({users,setUsers}) => {
                   {user.email}
                 </TableCell>
                 <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                  {user.roleId == 1 ? "Admin" : user.roleId==2 ? "Maneger" : "Employee"}
+                  {user.roleId == 1 ? "Admin" : user.roleId == 2 ? "Maneger" : "Employee"}
                 </TableCell>
                 <TableCell style={{ borderRight: "1px solid #ccc" }}>
                   <IconButton onClick={() => handleEdit(user)} color="primary">

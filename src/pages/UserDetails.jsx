@@ -56,9 +56,9 @@ function UserDetails() {
             borderRadius: 2,
             boxShadow: 24,
           }}
-          
+
         >
-          <RegistrationForm managers={users} onClose={handleCloseModal} />
+          <RegistrationForm managers={users.filter(item => [1, 2].includes(item.roleId))} onClose={handleCloseModal} />
         </Box>
       </Modal>
     </div>
