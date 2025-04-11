@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Order Invoice</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="text-black font-sans text-sm bg-white">
+    <div class="max-w-4xl mx-auto my-8 p-6 border border-black">
+
+        <!-- Branch Info -->
+        <div class="mb-6 text-center">
+            <h1 class="text-2xl font-bold uppercase">
+                <%= it.branch.name %> - <%= it.branch.location %>
+            </h1>
+            <p>
+                <%= it.branch.address %>
+            </p>
+            <p><strong>Contact:</strong>
+                <%= it.branch.contact %>
+            </p>
+            <p><strong>GSTIN:</strong>
+                <%= it.branch.gstin %>
+            </p>
+        </div>
+
+        <hr class="border border-black mb-4" />
+
+        <div class="flex justify-between mb-4">
+            <p><strong>Date:</strong>
+                <%= it.orderInfo.createdAt %>
+            </p>
+            <p><strong>Invoice No:</strong>
+                <%= it.orderInfo.orderNumber %>
+            </p>
+        </div>
+
+        <!-- Customer Info -->
+        <h2 class="text-xl font-bold text-center mb-4">Customer Information</h2>
+        <div class="flex justify-between gap-4 mb-6 border-b border-black">
+            <div class="p-4">
+                <h3 class="font-semibold mb-1">Consignor: <%= it.customer.consignor.name %>
+                </h3>
+                <p><strong>Address:</strong>
+                    <%= it.customer.consignor.address %>
+                </p>
+                <p><strong>GST NO.:</strong>
+                    <%= it.customer.consignor.gstin %>
+                </p>
+                <p><strong>Mobile:</strong>
+                    <%= it.customer.consignor.contact %>
+                </p>
+            </div>
+            <div class="p-4">
+                <h3 class="font-semibold mb-1">Consignee: <%= it.customer.consignee.name %>
+                </h3>
+                <p><strong>Address:</strong>
+                    <%= it.customer.consignee.address %>
+                </p>
+                <p><strong>GST NO.:</strong>
+                    <%= it.customer.consignee.gstin %>
+                </p>
+                <p><strong>Mobile:</strong>
+                    <%= it.customer.consignee.contact %>
+                </p>
+            </div>
+        </div>
+
+        <div class="flex px-4 justify-between">
+            <p><strong>Pickup:</strong>
+                <%= it.orderInfo.pickup %>
+            </p>
+            <p class="mr-4"><strong>Drop-off:</strong>
+                <%= it.orderInfo.dropoff %>
+            </p>
+        </div>
+
+        <!-- Order and Truck Info -->
+        <div class="flex justify-between gap-4 mb-6 border-b border-black">
+            <div class="p-4">
+                <h3 class="font-semibold text-lg mb-2">Truck and Driver</h3>
+                <p><strong>Truck No:</strong>
+                    <%= it.truck.number %>
+                </p>
+                <p><strong>Driver Name:</strong>
+                    <%= it.truck.driver %>
+                </p>
+                <p><strong>Phone:</strong>
+                    <%= it.truck.phone %>
+                </p>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <h3 class="font-semibold text-center text-lg mb-2">Order Summary</h3>
+        <div class="p-4 border border-black mb-6">
+            <table class="w-full border-collapse border border-black text-left">
+                <thead>
+                    <tr>
+                        <th class="border border-black px-2 py-1">Item Name</th>
+                        <th class="border border-black px-2 py-1">Weight</th>
+                        <th class="border border-black px-2 py-1">Unit</th>
+                        <th class="border border-black px-2 py-1">Qty</th>
+                        <th class="border border-black px-2 py-1">Rate</th>
+                        <th class="border border-black px-2 py-1">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for (let item of it.items) { %>
+                        <tr>
+                            <td class="border border-black px-2 py-1">
+                                <%= item.name %>
+                            </td>
+                            <td class="border border-black px-2 py-1">
+                                <%= item.weight %>
+                            </td>
+                            <td class="border border-black px-2 py-1">
+                                <%= item.unit %>
+                            </td>
+                            <td class="border border-black px-2 py-1">
+                                <%= item.quantity %>
+                            </td>
+                            <td class="border border-black px-2 py-1">
+                                <%= item.rate %>
+                            </td>
+                            <td class="border border-black px-2 py-1">₹<%= item.amount %>
+                            </td>
+                        </tr>
+                        <% } %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="text-right space-y-1 mt-auto">
+            <p><strong>Freight:</strong> ₹<%= it.invoice.freight %>
+            </p>
+            <p><strong>GST:</strong> ₹<%= it.invoice.gst %>
+            </p>
+            <p><strong>Extra Charges:</strong> ₹<%= it.invoice.extraCharge %>
+            </p>
+            <p class="font-semibold"><strong>Total:</strong> ₹<%= it.invoice.totalAmount %>
+            </p>
+            <p><strong>Advance:</strong> ₹<%= it.invoice.advance %>
+            </p>
+            <p><strong>Balance:</strong> ₹<%= it.invoice.balance %>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

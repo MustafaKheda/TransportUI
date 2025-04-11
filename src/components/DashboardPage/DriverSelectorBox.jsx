@@ -146,8 +146,9 @@ import {
   Box,
 } from "@mui/material";
 
-const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
+const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData, phoneError, nameError, phoneHelperText, nameHelperText, setFormErrors, formErrors }) => {
   const [selectedDriver, setSelectedDriver] = useState(null);
+
   // const [inputValue, setInputValue] = useState("");
   // const [phoneNumber, setPhoneNumber] = useState("");
 
@@ -215,6 +216,8 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
           fullWidth
           size="small"
           name="driverName"
+          error={nameError}
+          helperText={nameHelperText}
           value={orderData.driverName}
           onChange={(e) => {
             // const newPhone = e.target.value;
@@ -225,7 +228,7 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
             //   name: inputValue,
             //   phoneNumber: newPhone,
             // }));
-
+            setFormErrors({ ...formErrors, driverName: null });
             setOrderData((prev) => ({
               ...prev,
               driverName: e.target.value,
@@ -241,6 +244,8 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
           fullWidth
           name="driverPhone"
           size="small"
+          error={phoneError}
+          helperText={phoneHelperText}
           value={orderData.driverPhone}
           onChange={(e) => {
             // const newPhone = e.target.value;
@@ -251,6 +256,7 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData }) => {
             //   name: inputValue,
             //   phoneNumber: newPhone,
             // }));
+            setFormErrors({ ...formErrors, driverPhone: null });
 
             setOrderData((prev) => ({
               ...prev,

@@ -156,7 +156,7 @@ import { Box } from '@mui/material';
 
 const filter = createFilterOptions();
 
-export default function UserAutocompleteFields({ users, value, setValue, name }) {
+export default function UserAutocompleteFields({ users, value, setValue, name, ...rest }) {
   const [open, toggleOpen] = React.useState(false);
 
   const handleClose = () => {
@@ -256,7 +256,7 @@ export default function UserAutocompleteFields({ users, value, setValue, name })
         }}
         freeSolo
         renderInput={(params) => {
-          return <TextField  {...params} size='small' label={name} fullWidth />
+          return <TextField  {...params} size='small' label={name} fullWidth {...rest} />
         }}
       />
       <Dialog open={open} onClose={handleClose}>

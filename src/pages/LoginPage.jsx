@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import useAuthStore from "../api/authStore";
 import { api } from "../api/apihandler";
-
 function LoginPage() {
   const { email, password, setEmail, setPassword, resetCredentials } = useAuthStore();
   const [loading, setLoading] = useState(false);

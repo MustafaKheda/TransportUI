@@ -6,6 +6,9 @@
   <title>Order Invoice</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+
+  </style>
 </head>
 
 <body class="text-black font-sans text-sm bg-white">
@@ -23,17 +26,17 @@
 
     <div class="flex justify-between mb-4">
       <p><strong>Date:</strong> {{orderInfo.createdAt}}</p>
-      <p><strong>Invoice No:</strong> {{orderInfo.orderNumber}}</p>
+      <p><strong>Invoice No:</strong> {{orderInfo.number}}</p>
     </div>
 
     <!-- Customer Info -->
     <h2 class="text-xl font-bold text-center mb-4">Customer Information</h2>
     <div class="flex justify-between gap-4 mb-6 border-b border-black">
       <div class="p-4">
-        <h3 class="font-semibold mb-1">Consignor: {{customer.consigner.name}}</h3>
-        <p><strong>Address:</strong> {{customer.consigner.address}}</p>
-        <p><strong>GST NO.:</strong> {{customer.consigner.gstin}}</p>
-        <p><strong>Mobile:</strong> {{customer.consigner.contact}}</p>
+        <h3 class="font-semibold mb-1">Consignor: {{customer.consignor.name}}</h3>
+        <p><strong>Address:</strong> {{customer.consignor.address}}</p>
+        <p><strong>GST NO.:</strong> {{customer.consignor.gstin}}</p>
+        <p><strong>Mobile:</strong> {{customer.consignor.contact}}</p>
       </div>
       <div class="p-4">
         <h3 class="font-semibold mb-1">Consignee: {{customer.consignee.name}}</h3>
@@ -74,7 +77,7 @@
         <tbody>
           {{#items}}
           <tr>
-            <td class="border border-black px-2 py-1">{{name}}</td>
+            <td class="border border-black px-2 py-1">{{itemName}}</td>
             <td class="border border-black px-2 py-1">{{weight}}</td>
             <td class="border border-black px-2 py-1">{{unit}}</td>
             <td class="border border-black px-2 py-1">{{quantity}}</td>
@@ -87,7 +90,7 @@
     </div>
 
     <!-- Totals -->
-    <div class="text-right space-y-1">
+    <div class="text-right space-y-1 mt-auto">
       <p><strong>Freight:</strong> ₹{{invoice.freight}}</p>
       <p><strong>GST:</strong> ₹{{invoice.gst}}</p>
       <p><strong>Extra Charges:</strong> ₹{{invoice.extraCharge}}</p>

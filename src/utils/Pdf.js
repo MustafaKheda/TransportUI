@@ -1,8 +1,9 @@
-import { html2pdf } from "html2pdf.js";
+import html2pdf from "html2pdf.js";
 import Mustache from "mustache";
 import template from "../../template.html?raw";
-export const generatePDF = (data) => {
+export const generatePDF = async (data) => {
     // Render HTML from Mustache template
+    console.log(data)
     const rendered = Mustache.render(template, data);
 
     // Create container element
@@ -11,8 +12,11 @@ export const generatePDF = (data) => {
     document.body.appendChild(container); // Optionally hide it with `style="display: none"`
 
     // Generate PDF from rendered HTML
-    html2pdf().from(container).save("invoice.pdf");
+    html2pdf().from(container).then((data) => {
+        console.log(data)
+    }).save(`invoice_${data.orderInfo.number}.pdf`);
 
     // Optional: remove the temporary element
     setTimeout(() => container.remove(), 2000);
+
 };
