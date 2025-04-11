@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Drawer, List, ListItem, ListItemText, ListItemIcon, IconButton, Divider } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -18,9 +18,10 @@ const menuItems = [
 
 const MenuDrawer = ({ toggleDrawer }) => {
   const navigate = useNavigate(); // Initialize navigation
-
+  const [selected, setisSelected] = useState("/dashboard");
   const handleNavigation = (path) => {
     navigate(path);
+    setisSelected(path)
     // if (toggleDrawer) toggleDrawer(); // Close drawer if it's not permanent
   };
 
@@ -28,12 +29,21 @@ const MenuDrawer = ({ toggleDrawer }) => {
     <Drawer
       variant="permanent"
       anchor="left"
+      // color="rgb(149, 212, 254)"
       elevation={3}
       open
-      sx={{ width: 270, flexShrink: 0, "& .MuiDrawer-paper": { width: 270 } }}
-    >
+      sx={{
+        width: 270,
+        flexShrink: 0,
+        "& .MuiDrawer-paper": {
+          width: 270,
+          // backgroundColor: "rgb(149, 212, 254)",
+        },
+      }}>
       {/* Top Section */}
-      <div className="flex items-center justify-between p-4 border-b">
+      <div
+        // style={{ backgroundColor: "rgba(149, 212, 254, 0.34)" }}
+        className="flex items-center justify-between p-4 border-b">
         <div className="flex items-center gap-3">
           <AdminPanelSettingsIcon fontSize="large" color="primary" />
           <span className="text-lg font-semibold">Admin</span>
@@ -50,9 +60,15 @@ const MenuDrawer = ({ toggleDrawer }) => {
             button
             key={text}
             onClick={() => handleNavigation(path)}
-            className="border-b cursor-pointer"
-          >
-            <ListItemIcon>{icon}</ListItemIcon>
+            className="cursor-pointer border-b border-b-gray-300"
+            style={{
+              backgroundColor:
+                selected == path ? "rgb(161, 239, 165)" : "rgba(0,0,0,0)",
+            }}>
+            <ListItemIcon
+              color={selected == path ? "rgb(0, 0, 0)" : "rgba(0,0,0,0)"}>
+              {icon}
+            </ListItemIcon>
             <ListItemText primary={text} />
           </ListItem>
         ))}

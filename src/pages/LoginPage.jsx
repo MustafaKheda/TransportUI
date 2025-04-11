@@ -1,9 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import axios from "axios";
+import useAuthStore from "../api/authStore";
+import { api } from "../api/apihandler";
 function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { email, password, setEmail, setPassword, resetCredentials } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const navigate = useNavigate();
 
@@ -16,10 +19,26 @@ function LoginPage() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/dashboard");
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await api.post(`/auth/login`, {
+        email,
+        password
+      });
+      resetCredentials();
+      // Redirect to dashboard
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err?.response?.data?.message || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <div className="flex h-screen">
@@ -57,7 +76,7 @@ function LoginPage() {
                 required
               />
             </div>
-            <div className="mb-6">
+            <div className="mb-4">
               <label className="block text-gray-700 font-medium mb-1">Password</label>
               <input
                 type="password"
@@ -69,11 +88,16 @@ function LoginPage() {
                 required
               />
             </div>
+
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+
             <button
               type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-md text-lg font-medium transition duration-300"
+              disabled={loading}
+              className={`w-full ${loading ? "bg-blue-300" : "bg-blue-500 hover:bg-blue-600"
+                } text-white py-2 rounded-md text-lg font-medium transition duration-300`}
             >
-              Login
+              {loading ? "Logging in..." : "Login"}
             </button>
           </form>
         </div>
