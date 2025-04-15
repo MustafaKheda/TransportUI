@@ -19,6 +19,7 @@ import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
 import { api } from "../api/apihandler";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { TablePagination, CircularProgress, Box } from "@mui/material";
+import { printPdf } from "../utils/Pdf";
 
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -94,18 +95,7 @@ export default function DashboardPage() {
       });
     }
   };
-  const printPdf = (pdfUrl) => {
 
-    const printWindow = window.open(pdfUrl, "_blank");
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } else {
-      console.error('Failed to open print window');
-    }
-  };
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
       <div
@@ -196,7 +186,7 @@ export default function DashboardPage() {
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                      {order.orderNumber.split("-")[2]}
+                      {order.orderNumber}
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.consignor?.name || "N/A"}
@@ -276,7 +266,7 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
-          
+
           ordermetadata={ordermetadata}
           onClose={handleCloseModal}
         />

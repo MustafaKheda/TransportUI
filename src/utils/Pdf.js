@@ -20,3 +20,16 @@ export const generatePDF = async (data) => {
     setTimeout(() => container.remove(), 2000);
 
 };
+
+export const printPdf = (pdfUrl) => {
+
+    const printWindow = window.open(pdfUrl, "_blank");
+    if (printWindow) {
+        printWindow.onload = () => {
+            printWindow.focus();
+            printWindow.print();
+        };
+    } else {
+        console.error('Failed to open print window');
+    }
+};

@@ -401,7 +401,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       console.log("Validated Payload", payload);
       setSavedOrder(null)
       const response = await api.post("/orders", { ...payload })
-      setSavedOrder({ ...response.data, orderItems: payload.orderItems, })
+      setSavedOrder({ ...response.data, orderItems: payload.orderItems })
       console.log(response)
       if (response.status === 201) {
         // handleClose(true)
