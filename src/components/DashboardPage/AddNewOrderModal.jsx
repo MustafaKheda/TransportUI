@@ -393,16 +393,41 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           backgroundColor: "white",
         },
       }}>
-      <TextField
-        size="small"
-        sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
-        label="Date"
-        type="date"
-        name="date"
-        value={orderData.date}
-        onChange={handleChange}
-        InputLabelProps={{ shrink: true }}
-      />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "12px",
+          paddingBottom:5
+          // background: "linear-gradient(135deg, #A1EFA5, #ffffff)",
+          // boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+          // transform: "perspective(1000px) rotateX(1deg)",
+        }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+           color:"#66a6ff",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+
+          }}>
+          Create Order
+        </h1>
+        <TextField
+          size="small"
+          sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
+          label="Date"
+          type="date"
+          name="date"
+          value={orderData.date}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+        />
+      </div>
+
       <Box
         sx={{
           display: "grid",

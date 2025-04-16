@@ -110,28 +110,48 @@ export default function DashboardPage() {
     <div style={{ width: "95%", margin: "0 5px" }}>
       <div
         style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "12px",
+          background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+          transform: "perspective(1000px) rotateX(1deg)",
+          marginBottom: 20,
+        }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            color: "#fff",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+          }}>
+          Orders
+        </h1>
+        <Button
+             variant="contained"
+             onClick={handleOpenModal}
+             style={{
+               background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+               color: "#fff",
+               boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+               borderRadius: "8px",
+               textTransform: "none",
+             }}>
+             Create
+           </Button>
+      </div>
+      <div
+        style={{
           width: "100%",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
         }}>
         {/* Header with Add New Button */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            alignItems: "center",
-          }}>
-          <h1 className="text-2xl pb-3"> Orders </h1>
-          <Button
-            className="cursor-pointer"
-            variant="contained"
-            color="primary"
-            onClick={handleOpenModal}>
-            Add New
-          </Button>
-        </div>
+
         <TableContainer
           component={Paper}
           elevation={3}
@@ -233,7 +253,7 @@ export default function DashboardPage() {
                         <CircularProgress size={24} />
                       ) : (
                         <>
-                          <IconButton color="primary">
+                          <IconButton  color="primary">
                             <EditIcon />
                           </IconButton>
                           <IconButton color="error">
@@ -276,7 +296,6 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
-          
           ordermetadata={ordermetadata}
           onClose={handleCloseModal}
         />

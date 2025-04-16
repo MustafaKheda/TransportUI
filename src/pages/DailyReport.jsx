@@ -134,7 +134,41 @@ export default function OrdersFilterTable() {
 
   return (
     <div className="p-6 min-w-full">
-      <h2 className="text-2xl font-bold mb-4">Orders Table</h2>
+    <div
+           style={{
+             display: "flex",
+             justifyContent: "space-between",
+             width: "100%",
+             alignItems: "center",
+             padding: "1rem",
+             borderRadius: "12px",
+             background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
+             boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+             transform: "perspective(1000px) rotateX(1deg)",
+             marginBottom: 20,
+           }}>
+           <h1
+             style={{
+               fontSize: "1.5rem",
+               fontWeight: "bold",
+               color: "#fff",
+               textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+             }}>
+             Builty Reports
+           </h1>
+           {/* <Button
+             variant="contained"
+             onClick={handleOpenModal}
+             style={{
+               background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+               color: "#fff",
+               boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+               borderRadius: "8px",
+               textTransform: "none",
+             }}>
+             Add User
+           </Button> */}
+         </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <input
@@ -186,7 +220,7 @@ export default function OrdersFilterTable() {
           style={{ width: "100%" }}>
           <Table style={{ width: "100%" }}>
             <TableHead>
-              <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
+              <TableRow style={{ backgroundColor: "rgb(161, 239, 165)"}}>
                 {[
                   "Bilty No.",
                   "Pickup",
@@ -220,7 +254,7 @@ export default function OrdersFilterTable() {
           style={{ width: "100%", marginTop: 8 }}>
           <Table style={{ width: "100%" }}>
             <TableHead>
-              <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
+              <TableRow style={{ backgroundColor: "rgb(161, 239, 165)"}}>
                 {[
                   "Bilty No.",
                   "Pickup",
