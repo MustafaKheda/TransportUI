@@ -19,6 +19,7 @@ import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
 import { api } from "../api/apihandler";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { TablePagination, CircularProgress, Box } from "@mui/material";
+import { printPdf } from "../utils/Pdf";
 
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,6 +84,7 @@ export default function DashboardPage() {
       const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
       const pdfBlob = response.data;
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log(pdfUrl)
       printPdf(pdfUrl);
     } catch (error) {
       console.error("Failed to download PDF", error);
@@ -94,20 +96,44 @@ export default function DashboardPage() {
       });
     }
   };
-  const printPdf = (pdfUrl) => {
 
-    const printWindow = window.open(pdfUrl, "_blank");
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } else {
-      console.error('Failed to open print window');
-    }
-  };
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "12px",
+          background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+          transform: "perspective(1000px) rotateX(1deg)",
+          marginBottom: 20,
+        }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            color: "#fff",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+          }}>
+          Orders
+        </h1>
+        <Button
+          variant="contained"
+          onClick={handleOpenModal}
+          style={{
+            background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+            color: "#fff",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+            borderRadius: "8px",
+            textTransform: "none",
+          }}>
+          Create
+        </Button>
+      </div>
       <div
         style={{
           width: "100%",
@@ -116,22 +142,7 @@ export default function DashboardPage() {
           alignItems: "center",
         }}>
         {/* Header with Add New Button */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            alignItems: "center",
-          }}>
-          <h1 className="text-2xl pb-3"> Orders </h1>
-          <Button
-            className="cursor-pointer"
-            variant="contained"
-            color="primary"
-            onClick={handleOpenModal}>
-            Add New
-          </Button>
-        </div>
+
         <TableContainer
           component={Paper}
           elevation={3}
@@ -196,7 +207,7 @@ export default function DashboardPage() {
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                      {order.orderNumber.split("-")[2]}
+                      {order.orderNumber}
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.consignor?.name || "N/A"}
@@ -276,7 +287,7 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
-          
+
           ordermetadata={ordermetadata}
           onClose={handleCloseModal}
         />
