@@ -22,7 +22,6 @@ export const generatePDF = async (data) => {
 };
 
 export const printPdf = (pdfUrl) => {
-
     const printWindow = window.open(pdfUrl, "_blank");
     if (printWindow) {
         printWindow.onload = () => {

@@ -10,10 +10,10 @@ api.interceptors.response.use(
   res => res,
   async err => {
     const originalRequest = err.config;
-
+    console.log(originalRequest)
     if (err.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-
+      debugger
       try {
         await axios.get(`${import.meta.env.VITE_BASE_URL}/auth/refresh-token`); // refreshes accessToken cookie
         return api(originalRequest); // retry original request
@@ -28,7 +28,7 @@ api.interceptors.response.use(
 
         // 🔀 Redirect to login (if in browser environment)
         if (typeof window !== "undefined") {
-          window.location.href = "/";
+          // window.location.href = "/";
         }
 
         return Promise.reject(refreshError);

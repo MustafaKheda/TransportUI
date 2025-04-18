@@ -84,6 +84,7 @@ export default function DashboardPage() {
       const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
       const pdfBlob = response.data;
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log(pdfUrl)
       printPdf(pdfUrl);
     } catch (error) {
       console.error("Failed to download PDF", error);

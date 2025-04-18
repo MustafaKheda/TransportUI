@@ -9,68 +9,58 @@ import {
 const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData, phoneError, nameError, phoneHelperText, nameHelperText, setFormErrors, formErrors }) => {
   const [selectedDriver, setSelectedDriver] = useState(null);
 
-  // const [inputValue, setInputValue] = useState("");
-  // const [phoneNumber, setPhoneNumber] = useState("");
 
+  const handleSelect = (event, newValue) => {
+    let name = "";
+    let phone = "";
+    if (typeof newValue === "string") {
+      name = newValue;
+    } else if (newValue?.name) {
+      name = newValue.name;
+      phone = newValue.phoneNumber || "";
+    }
 
-  // const handleSelect = (event, newValue) => {
-  //   let name = "";
-  //   let phone = "";
-  //   if (typeof newValue === "string") {
-  //     name = newValue;
-  //   } else if (newValue?.name) {
-  //     name = newValue.name;
-  //     phone = newValue.phoneNumber || "";
-  //   }
-  //   setSelectedDriver({ name, phoneNumber: phone });
-  //   setPhoneNumber(phone);
-  //   setInputValue(name);
+    setOrderData((prev) => ({
+      ...prev,
+      driverName: name,
+      driverPhone: phone,
+    }));
+  };
 
-  //   setOrderData((prev) => ({
-  //     ...prev,
-  //     driverName: name,
-  //     driverPhone: phone,
-  //   }));
-  // };
-  // useEffect(() => {
-  //   if (selectedDriver) {
-  //     setOrderData((prev) => ({
-  //       ...prev,
-  //       driverName: selectedDriver.name || "",
-  //       driverPhone: selectedDriver.phoneNumber || "",
-  //     }));
-  //   }
-  // }, [selectedDriver]);
   return (
     <Box sx={{ display: "flex", width: "100%", gap: 3 }}>
       <Box sx={{ flex: 1 }}>
-        {/* <Autocomplete
+        <Autocomplete
           freeSolo
           options={driverInfo}
           getOptionLabel={(option) =>
             typeof option === "string" ? option : option.name || ""
           }
-          value={selectedDriver}
-          inputValue={inputValue}
+
+          value={orderData.driverName}
           onInputChange={(e, newInputValue) => {
+            setFormErrors({ ...formErrors, driverName: null });
             setOrderData((prev) => ({
               ...prev,
               driverName: newInputValue,
             }));
 
-            setInputValue(newInputValue)
           }}
+          size="small"
           onChange={handleSelect}
           renderInput={(params) => (
             <TextField
+              error={nameError}
+              helperText={nameHelperText}
+              size="small"
               {...params}
               label="Driver Name"
               variant="outlined"
               fullWidth
             />
           )}
-        /> */}
-        <TextField
+        />
+        {/* <TextField
           label="Driver Name"
           variant="outlined"
           fullWidth
@@ -94,7 +84,7 @@ const DriverAutocomplete = ({ driverInfo = [], orderData, setOrderData, phoneErr
               driverName: e.target.value,
             }));
           }}
-        />
+        /> */}
       </Box>
 
       <Box sx={{ flex: 1 }}>
