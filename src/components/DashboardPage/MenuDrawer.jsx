@@ -7,6 +7,8 @@ import BusinessIcon from "@mui/icons-material/Business";
 import PeopleIcon from "@mui/icons-material/People";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import LogoutIcon from '@mui/icons-material/Logout';
+import { api } from "../../api/apihandler";
 import logo from "../../assets/DTC.png";
 const menuItems = [
   { text: "Orders", icon: <ShoppingCartIcon />, path: "/dashboard" },
@@ -18,13 +20,23 @@ const menuItems = [
 
 const MenuDrawer = ({ toggleDrawer }) => {
   const navigate = useNavigate(); // Initialize navigation
-const [selected, setisSelected] = useState("/dashboard");
+  const [selected, setisSelected] = useState("/dashboard");
   const handleNavigation = (path) => {
     navigate(path);
     setisSelected(path)
     // if (toggleDrawer) toggleDrawer(); // Close drawer if it's not permanent
   };
+  const handleLogout = async () => {
+    try {
+      const response = await api.post("/auth/logout");
+      if (response.status === 200) {
+        navigate("/")
+      }
+    } catch (error) {
 
+    }
+
+  }
   return (
     <Drawer
       variant="permanent"

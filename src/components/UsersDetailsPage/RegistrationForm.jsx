@@ -11,11 +11,13 @@ import {
   TableCell,
   CircularProgress,
   Box,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import FreeSoloCreateOptionDialog from "../../AutoComplete";
 import { api } from "../../api/apihandler";
 
-function RegistrationForm({ order, onClose ,managers}) {
+function RegistrationForm({ order, onClose, managers }) {
   const [orderData, setOrderMetaData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -24,44 +26,41 @@ function RegistrationForm({ order, onClose ,managers}) {
     name: "",
     email: "",
     password: "",
-    branch: "",
-    manager: "",
-    role: "employee",
+    branchId: "",
+    managerId: null,
+    roleId: 3,
   });
-const validateForm = () => {
-  const errors = {};
+  const validateForm = () => {
+    const errors = {};
 
-  if (!formData.name.trim()) {
-    errors.name = "Name is required";
-  }
+    if (!formData.name.trim()) {
+      errors.name = "Name is required";
+    }
 
-  if (!formData.email) {
-    errors.email = "Email is required";
-  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-    errors.email = "Email is invalid";
-  }
+    if (!formData.email) {
+      errors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      errors.email = "Email is invalid";
+    }
 
-  if (!formData.password) {
-    errors.password = "Password is required";
-  } else if (formData.password.length < 6) {
-    errors.password = "Password must be at least 6 characters";
-  }
+    if (!formData.password) {
+      errors.password = "Password is required";
+    } else if (formData.password.length < 6) {
+      errors.password = "Password must be at least 6 characters";
+    }
 
-  if (!formData.branch) {
-    errors.branch = "Please select a branch";
-  }
+    if (!formData.branchId) {
+      errors.branch = "Please select a branch";
+    }
 
-  if (!formData.manager) {
-    errors.manager = "Manager name is required";
-  }
+    if (!formData.roleId) {
+      errors.role = "Role is required";
+    }
 
-  if (!formData.role) {
-    errors.role = "Role is required";
-  }
-
-  setFormErrors(errors);
-  return Object.keys(errors).length === 0;
-};
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+  console.log(formErrors)
   useEffect(() => {
     if (order) {
       setFormData((prevData) => ({
@@ -70,25 +69,38 @@ const validateForm = () => {
       }));
     }
   }, [order]);
-  
+
   console.log(formData, " <MenuItem value=");
   const handleChange = (e) => {
     console.log(e.target, "formData");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
   const handleSubmit = async (e) => {
-    if (!validateForm()) {
-      return;
-}
-    e.preventDefault();
-    setLoading(true);
-    const response = await api.post(
-      `${import.meta.env.VITE_BASE_URL}/auth/register`,
-      formData
-    );
-    console.log(formData, "`${import.meta.env.VITE_BASE_URL}/branch`");
-    setLoading(false);
-    onClose();
+    e.preventDefault()
+    try {
+      const payload = {
+        ...formData,
+        roleId: Number(formData.roleId)
+      }
+      if (!validateForm()) {
+        return;
+      }
+      e.preventDefault();
+      setLoading(true);
+      const response = await api.post(
+        `${import.meta.env.VITE_BASE_URL}/auth/register`,
+        payload
+      );
+      console.log(response, "");
+
+      onClose();
+    } catch (error) {
+      console.log(error.response.data.message, "Error");
+      setFormErrors((prev) => ({ ...prev, email: error.response.data.message }))
+    } finally {
+      setLoading(false);
+    }
+
   };
   const getOrderformData = async () => {
     try {
@@ -122,6 +134,8 @@ const validateForm = () => {
         <TextField
           size="small"
           label="Email"
+          error={!!(formErrors.email)}
+          helperText={formErrors.email}
           name="email"
           type="email"
           value={formData.email}
@@ -141,53 +155,61 @@ const validateForm = () => {
         />
 
         {/* <FreeSoloCreateOptionDialog /> */}
-        {formData.role == "manager" && (
+        <FormControl fullWidth required>
+          <InputLabel id="manager-select-label">Branch</InputLabel>
           <Select
             size="small"
-            name="branch"
+            name="branchId"
+            label="Branch"
             aria-placeholder="Select Branch"
-            value={formData.branch}
+            value={formData.branchId}
             onChange={handleChange}
             fullWidth
             required>
             {orderData.map((item) => (
-              <MenuItem value={item.name}>{item.name}</MenuItem>
+              <MenuItem value={item.id}>{item.name}</MenuItem>
             ))}
           </Select>
-        )}
-        {formData.role === "employee" && (
+        </FormControl>
+
+        <FormControl fullWidth>
+          <InputLabel id="manager-select-label">Manager</InputLabel>
           <Select
-            name="manager"
-            value={formData.manager}
+            labelId="manager-select-label"
+            name="managerId"
+            value={formData.managerId}
             onChange={handleChange}
-            fullWidth
-            required>
+            label="Manager"
+          >
             {managers.map((item) => (
-              <MenuItem value={item.name}>{item.name}</MenuItem>
+              <MenuItem key={item.id} value={item.id}>
+                {item.name}
+              </MenuItem>
             ))}
           </Select>
-        )}
+        </FormControl>
+
         <RadioGroup
           row
-          name="role"
-          value={formData.role}
+          name="roleId"
+          value={formData.roleId}
           onChange={handleChange}
           className="flex justify-center items-center">
-          <FormControlLabel value="admin" control={<Radio />} label="Admin" />
+          <FormControlLabel value={1} control={<Radio />} label="Admin" />
           <FormControlLabel
-            value="manager"
+            value={2}
             control={<Radio />}
             label="Manager"
           />
           <FormControlLabel
-            value="employee"
+            value={3}
             control={<Radio />}
             label="Employee"
           />
         </RadioGroup>
         <Button
           type="submit"
-          onSubmit={handleSubmit}
+          // onSubmit={handleSubmit}
           variant="contained"
           color="primary"
           fullWidth>

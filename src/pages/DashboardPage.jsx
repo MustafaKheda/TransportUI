@@ -19,6 +19,7 @@ import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
 import { api } from "../api/apihandler";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { TablePagination, CircularProgress, Box } from "@mui/material";
+import { printPdf } from "../utils/Pdf";
 
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -83,6 +84,7 @@ export default function DashboardPage() {
       const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
       const pdfBlob = response.data;
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log(pdfUrl)
       printPdf(pdfUrl);
     } catch (error) {
       console.error("Failed to download PDF", error);
@@ -94,18 +96,7 @@ export default function DashboardPage() {
       });
     }
   };
-  const printPdf = (pdfUrl) => {
 
-    const printWindow = window.open(pdfUrl, "_blank");
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } else {
-      console.error('Failed to open print window');
-    }
-  };
   return (
     <div style={{ width: "95%", margin: "0 5px" }}>
       <div
@@ -131,17 +122,17 @@ export default function DashboardPage() {
           Orders
         </h1>
         <Button
-             variant="contained"
-             onClick={handleOpenModal}
-             style={{
-               background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
-               color: "#fff",
-               boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
-               borderRadius: "8px",
-               textTransform: "none",
-             }}>
-             Create
-           </Button>
+          variant="contained"
+          onClick={handleOpenModal}
+          style={{
+            background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+            color: "#fff",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+            borderRadius: "8px",
+            textTransform: "none",
+          }}>
+          Create
+        </Button>
       </div>
       <div
         style={{
@@ -216,7 +207,7 @@ export default function DashboardPage() {
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                      {order.orderNumber.split("-")[2]}
+                      {order.orderNumber}
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.consignor?.name || "N/A"}
@@ -253,7 +244,7 @@ export default function DashboardPage() {
                         <CircularProgress size={24} />
                       ) : (
                         <>
-                          <IconButton  color="primary">
+                          <IconButton color="primary">
                             <EditIcon />
                           </IconButton>
                           <IconButton color="error">
@@ -296,6 +287,7 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
+
           ordermetadata={ordermetadata}
           onClose={handleCloseModal}
         />

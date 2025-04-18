@@ -51,11 +51,11 @@ function LoginPage() {
         }}
       >
         <div className="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-white p-8">
-           <img
-                      src={logo}
-                      alt="Logo"
-                      style={{ height: 40, objectFit: "contain" ,marginBottom:20}}
-                    />
+          <img
+            src={logo}
+            alt="Logo"
+            style={{ height: 40, objectFit: "contain", marginBottom: 20 }}
+          />
           <h1 className="text-4xl font-bold">Your Trusted Partner in Logistics</h1>
           <p className="mt-4 text-lg text-gray-200 text-center">
             We ensure fast and reliable delivery services to meet your needs.
