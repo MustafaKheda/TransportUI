@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { printPdf } from "../utils/Pdf";
 export default function OrdersFilterTable() {
-  const [reportType, setReportType] = useState("custom");
+  const [reportType, setReportType] = useState("daily");
   const [selectedMonth, setSelectedMonth] = useState("");
   const [ordersData, setOrdersData] = useState([]);
   const [filters, setFilters] = useState({
