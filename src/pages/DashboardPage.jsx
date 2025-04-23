@@ -98,7 +98,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div style={{ width: "95%", margin: "0 5px" }}>
+    <div style={{ width: "100%", margin: "0 5px" }}>
       <div
         style={{
           display: "flex",
@@ -146,8 +146,24 @@ export default function DashboardPage() {
         <TableContainer
           component={Paper}
           elevation={3}
-          sx={{ width: "100%", mt: 2 }}>
-          <Table>
+
+          sx={{
+            width: "100%",
+            mt: 2,
+            maxHeight: '75vh',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '6px', // thinner scrollbar
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#888', // thumb color
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: '#555',
+            },
+          }}>
+          <Table stickyHeader size="small">
             <TableHead>
               <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
                 <TableCell style={{ borderRight: "1px solid #ccc" }}>
@@ -203,7 +219,7 @@ export default function DashboardPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              <TableBody>
+              <TableBody className="!overflow-y-auto !max-h-[50vh]">
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
@@ -231,6 +247,9 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.driver?.name || "N/A"}
+                      <br />
+                      <span>({order?.driver?.phoneNumber || "N/A"})</span>
+
                     </TableCell>
                     <TableCell
                       style={{ borderRight: "1px solid #ccc" }}
@@ -238,7 +257,7 @@ export default function DashboardPage() {
                       ₹{order.invoice?.totalAmount?.toLocaleString() || 0}
                     </TableCell>
                     <TableCell
-                      style={{ borderRight: "1px solid #ccc" }}
+                      style={{ borderRight: "1px solid #ccc", p: "1px" }}
                       align="center">
                       {pdfLoadingIds.has(order.id) ? (
                         <CircularProgress size={24} />

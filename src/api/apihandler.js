@@ -28,7 +28,7 @@ api.interceptors.response.use(
 
         // 🔀 Redirect to login (if in browser environment)
         if (typeof window !== "undefined") {
-          // window.location.href = "/";
+          window.location.href = "/";
         }
 
         return Promise.reject(refreshError);

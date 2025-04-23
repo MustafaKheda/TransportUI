@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { api } from "../api/apihandler";
 import {
   Table,
@@ -12,8 +12,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { printPdf } from "../utils/Pdf";
+import TruckMultiSelect from "../components/TruckAutocomplete";
 export default function OrdersFilterTable() {
   const [reportType, setReportType] = useState("daily");
+  const uniqueTrucksRef = useRef(null);
   const [selectedMonth, setSelectedMonth] = useState("");
   const [ordersData, setOrdersData] = useState([]);
   const [filters, setFilters] = useState({
@@ -22,8 +24,9 @@ export default function OrdersFilterTable() {
     search: "",
     from: new Date().toISOString().split("T")[0],
     to: "",
-    trucks: "",
+    trucks: [],
   });
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const [error, setError] = useState(null);
@@ -44,11 +47,6 @@ export default function OrdersFilterTable() {
         const data = res.data;
         console.log(data);
         // 🔍 Extract unique values
-        const truckNumbers = [
-          ...new Set(
-            data.map((order) => order.truck?.truckNumber).filter(Boolean)
-          ),
-        ];
         const pickupLocations = [
           ...new Set(data.map((order) => order.pickupLocation).filter(Boolean)),
         ];
@@ -60,7 +58,7 @@ export default function OrdersFilterTable() {
 
         // Use these for filters
         console.log(
-          { truckNumbers, pickupLocations, dropoffLocations },
+          { pickupLocations, dropoffLocations },
           "filters"
         );
         setOrdersData(data);
@@ -90,9 +88,6 @@ export default function OrdersFilterTable() {
       queryParams = {
         from,
         to,
-        pickup: filters.pickup,
-        dropoff: filters.dropoff,
-        trucks: filters.trucks,
       };
     } else {
       // Custom report - all filters
@@ -101,7 +96,8 @@ export default function OrdersFilterTable() {
         to: filters.to,
         pickup: filters.pickup,
         dropoff: filters.dropoff,
-        trucks: filters.trucks,
+        trucks: filters.trucks.map((item) => item.id),
+        search: filters.search,
       };
     }
 
@@ -113,6 +109,7 @@ export default function OrdersFilterTable() {
     filters.pickup,
     filters.dropoff,
     filters.trucks,
+    filters.pickup,
     reportType,
     selectedMonth,
   ]);
@@ -136,9 +133,6 @@ export default function OrdersFilterTable() {
       queryParams = {
         from,
         to,
-        pickup: filters.pickup,
-        dropoff: filters.dropoff,
-        trucks: filters.trucks,
         print: true,
       };
     } else {
@@ -147,7 +141,8 @@ export default function OrdersFilterTable() {
         to: filters.to,
         pickup: filters.pickup,
         dropoff: filters.dropoff,
-        trucks: filters.trucks,
+        trucks: filters.trucks.map(item => item.id),
+        search: filters.search, // include this!
         print: true,
       };
     }
@@ -157,10 +152,31 @@ export default function OrdersFilterTable() {
     await fetchOrders(query, true);
     setIsPrinting(false)
   };
-  // const filteredOrders = [...ordersData];
+  useEffect(() => {
+    const delay = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, search: searchQuery }));
+    }, 300);
+    return () => clearTimeout(delay);
+  }, [searchQuery])
 
+
+  if (!uniqueTrucksRef.current && ordersData.length > 0) {
+    const map = new Map();
+
+    ordersData.forEach(o => {
+      if (o.truck?.id && !map.has(o.truck.id)) {
+        map.set(o.truck.id, { id: o.truck.id, number: o.truck.truckNumber });
+      }
+    });
+
+    uniqueTrucksRef.current = Array.from(map.values());
+  }
+
+  const uniqueTrucks = uniqueTrucksRef.current || [];
+  // const filteredOrders = [...ordersData];
+  console.log(uniqueTrucks)
   return (
-    <div className="p-6 min-w-full">
+    <div className=" min-w-full">
       <div
         style={{
           display: "flex",
@@ -172,7 +188,7 @@ export default function OrdersFilterTable() {
           background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
           boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
           transform: "perspective(1000px) rotateX(1deg)",
-          marginBottom: 20,
+          marginBottom: 5,
         }}>
         <h1
           style={{
@@ -186,9 +202,9 @@ export default function OrdersFilterTable() {
       </div>
 
 
-      <div className="p-6 w-full">
+      <div className="p-2 w-full mb-4">
         {/* Header Controls */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           {/* Report Type Selector */}
           <div className="flex flex-col w-full md:w-1/4">
             <label className="text-sm font-medium text-gray-700 mb-1">Report Type</label>
@@ -242,7 +258,7 @@ export default function OrdersFilterTable() {
 
         {/* Custom Filters */}
         {reportType === "custom" && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             <input
               type="date"
               value={filters.from}
@@ -269,18 +285,13 @@ export default function OrdersFilterTable() {
               onChange={(e) => setFilters({ ...filters, dropoff: e.target.value })}
               className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 transition-all"
             />
-            <input
-              type="text"
-              placeholder="Truck No. (e.g., 3)"
-              value={filters.trucks}
-              onChange={(e) => setFilters({ ...filters, trucks: e.target.value })}
-              className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 transition-all"
-            />
+
+            <TruckMultiSelect options={uniqueTrucks} selectedTrucks={filters.trucks} setSelectedTrucks={(newValue) => setFilters((prev) => ({ ...prev, trucks: newValue }))} />
             <input
               type="text"
               placeholder="Search..."
               value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
@@ -330,7 +341,8 @@ export default function OrdersFilterTable() {
             <TableHead>
               <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
                 {[
-                  "Bilty No.",
+                  "Date",
+                  "Order No.",
                   "Pickup",
                   "Dropoff",
                   "Consignee",
@@ -355,6 +367,15 @@ export default function OrdersFilterTable() {
               {ordersData.length > 0 ? (
                 ordersData.map((order, idx) => (
                   <TableRow key={idx} hover>
+                    <TableCell style={{ borderRight: "1px solid #ccc" }}>
+                      {order.createdAt
+                        ? new Intl.DateTimeFormat({
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        }).format(new Date(order.createdAt))
+                        : "-"}
+                    </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.orderNumber || "-"}
                     </TableCell>

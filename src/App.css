@@ -1,3 +1,7 @@
 #root {
   max-width: 1280px;
 }
+*{
+  scrollbar-width: thin;
+  scrollbar-color: #888 transparent;
+}

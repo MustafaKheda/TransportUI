@@ -72,7 +72,7 @@ const MenuDrawer = ({ toggleDrawer }) => {
       </div>
 
       {/* Menu List */}
-      <List className="w-full">
+      <List className="w-full flex flex-col flex-1 ">
         {menuItems.map(({ text, icon, path }) => (
           <ListItem
             button
@@ -81,7 +81,7 @@ const MenuDrawer = ({ toggleDrawer }) => {
             className="cursor-pointer"
             sx={{
               backgroundColor:
-                selected === path ? "rgba(255, 255, 255, 0.4)" : "transparent",
+                window.location.pathname === path ? "rgba(255, 255, 255, 0.4)" : "transparent",
               transition: "0.3s ease",
               "&:hover": {
                 backgroundColor: "rgba(255,255,255,0.2)",
@@ -89,7 +89,7 @@ const MenuDrawer = ({ toggleDrawer }) => {
             }}>
             <ListItemIcon
               sx={{
-                color: selected === path ? " #66a6ff" : "#333",
+                color: window.location.pathname === path ? " #66a6ff" : "#333",
                 minWidth: 36,
               }}>
               {icon}
@@ -97,68 +97,46 @@ const MenuDrawer = ({ toggleDrawer }) => {
             <ListItemText
               primary={text}
               primaryTypographyProps={{
-                fontWeight: selected === path ? "bold" : "normal",
-                color: selected === path ? " #66a6ff" : "#222",
+                fontWeight: window.location.pathname === path ? "bold" : "normal",
+                color: window.location.pathname === path ? " #66a6ff" : "#222",
               }}
             />
           </ListItem>
         ))}
+
+        <ListItem
+
+          button
+          key={"logout-button"}
+          onClick={handleLogout}
+          className="cursor-pointer"
+          sx={{
+            mt: "auto",
+            backgroundColor:
+              "rgba(255, 255, 255, 0.4)",
+            transition: "0.3s ease",
+            "&:hover": {
+              backgroundColor: "rgba(255,255,255,0.2)",
+            },
+          }}>
+          <ListItemIcon
+            sx={{
+              color: "#333",
+              minWidth: 36,
+            }}>
+            {<LogoutIcon />}
+          </ListItemIcon>
+          <ListItemText
+            primary={"logout"}
+            primaryTypographyProps={{
+              fontWeight: "600",
+              color: "#222",
+            }}
+          />
+        </ListItem>
+
       </List>
-    </Drawer>
-
-    // <Drawer
-    //   variant="permanent"
-    //   anchor="left"
-    //   // color="rgb(149, 212, 254)"
-    //   elevation={3}
-    //   open
-    //   sx={{
-    //     width: 270,
-    //     flexShrink: 0,
-    //     "& .MuiDrawer-paper": {
-    //       width: 270,
-    //       backgroundColor: "rgb(149, 212, 254)",
-    //     },
-    //   }}>
-    //   {/* Top Section */}
-    //   <div
-    //     // style={{ backgroundColor: "rgba(149, 212, 254, 0.34)" }}
-    //     className="flex items-center justify-between p-4 border-b">
-    //     <div className="flex items-center gap-3">
-    //       {/* <AdminPanelSettingsIcon fontSize="large" color="primary" /> */}
-    //       <img
-    //         src={logo}
-    //         alt="Logo"
-    //         style={{ height: 40, objectFit: "contain" }}
-    //       />
-    //       {/* <span className="text-lg font-semibold">Admin</span> */}
-    //     </div>
-    //     <IconButton onClick={toggleDrawer}>
-    //       <MenuIcon />
-    //     </IconButton>
-    //   </div>
-
-    //   {/* Menu List */}
-    //   <List className="w-full">
-    //     {menuItems.map(({ text, icon, path }) => (
-    //       <ListItem
-    //         button
-    //         key={text}
-    //         onClick={() => handleNavigation(path)}
-    //         className="cursor-pointer"
-    //         style={{
-    //           backgroundColor:
-    //             selected == path ? "rgb(161, 239, 165)" : "rgba(0,0,0,0)",
-    //         }}>
-    //         <ListItemIcon
-    //           color={selected == path ? "rgb(0, 0, 0)" : "rgba(0,0,0,0)"}>
-    //           {icon}
-    //         </ListItemIcon>
-    //         <ListItemText primary={text} />
-    //       </ListItem>
-    //     ))}
-    //   </List>
-    // </Drawer>
+    </Drawer >
   );
 };
 
