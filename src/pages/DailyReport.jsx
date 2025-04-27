@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef, useContext } from "react";
 import { api } from "../api/apihandler";
 import {
   Table,
@@ -13,13 +13,21 @@ import {
 } from "@mui/material";
 import { printPdf } from "../utils/Pdf";
 import TruckMultiSelect from "../components/TruckAutocomplete";
+import { useOrderMeta } from "../utils/OrderDataContext";
 export default function OrdersFilterTable() {
   const [reportType, setReportType] = useState("daily");
-  const uniqueTrucksRef = useRef(null);
-  const [selectedMonth, setSelectedMonth] = useState("");
+  const { orderMetaData, loading: metaLoading } = useOrderMeta()
+
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    return `${year}-${month}`;
+  });
+  console.log(orderMetaData)
   const [ordersData, setOrdersData] = useState([]);
   const [filters, setFilters] = useState({
-    pickup: "",
+    pickup: orderMetaData?.roleId !== 1 ? (orderMetaData?.userLoction || "") : "",
     dropoff: "",
     search: "",
     from: new Date().toISOString().split("T")[0],
@@ -70,8 +78,17 @@ export default function OrdersFilterTable() {
       setLoading(false);
     }
   }, [])
-  console.log(ordersData, "ordersData")
+
   useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      pickup: orderMetaData?.roleId !== 1 ? (orderMetaData?.userLoction || "") : "",
+    }))
+
+  }, [orderMetaData?.userLoction])
+
+  useEffect(() => {
+    if (metaLoading) return
     let queryParams = {};
 
     if (reportType === "daily") {
@@ -79,6 +96,7 @@ export default function OrdersFilterTable() {
       queryParams = {
         from: filters.from,
         to: filters.from,
+        pickup: filters.pickup,
       };
     } else if (reportType === "monthly" && selectedMonth) {
       const [year, month] = selectedMonth.split("-");
@@ -87,6 +105,7 @@ export default function OrdersFilterTable() {
       const to = `${year}-${month}-${lastDay}`;
       queryParams = {
         from,
+        pickup: filters.pickup,
         to,
       };
     } else {
@@ -112,6 +131,7 @@ export default function OrdersFilterTable() {
     filters.pickup,
     reportType,
     selectedMonth,
+    metaLoading
   ]);
 
 
@@ -125,6 +145,7 @@ export default function OrdersFilterTable() {
         from: filters.from,
         to: filters.from,
         print: true,
+        pickup: filters.pickup,
       };
     } else if (reportType === "monthly" && selectedMonth) {
       const [year, month] = selectedMonth.split("-");
@@ -133,6 +154,7 @@ export default function OrdersFilterTable() {
       queryParams = {
         from,
         to,
+        pickup: filters.pickup,
         print: true,
       };
     } else {
@@ -152,6 +174,7 @@ export default function OrdersFilterTable() {
     await fetchOrders(query, true);
     setIsPrinting(false)
   };
+
   useEffect(() => {
     const delay = setTimeout(() => {
       setFilters((prev) => ({ ...prev, search: searchQuery }));
@@ -159,22 +182,7 @@ export default function OrdersFilterTable() {
     return () => clearTimeout(delay);
   }, [searchQuery])
 
-
-  if (!uniqueTrucksRef.current && ordersData.length > 0) {
-    const map = new Map();
-
-    ordersData.forEach(o => {
-      if (o.truck?.id && !map.has(o.truck.id)) {
-        map.set(o.truck.id, { id: o.truck.id, number: o.truck.truckNumber });
-      }
-    });
-
-    uniqueTrucksRef.current = Array.from(map.values());
-  }
-
-  const uniqueTrucks = uniqueTrucksRef.current || [];
   // const filteredOrders = [...ordersData];
-  console.log(uniqueTrucks)
   return (
     <div className=" min-w-full">
       <div
@@ -286,7 +294,7 @@ export default function OrdersFilterTable() {
               className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 transition-all"
             />
 
-            <TruckMultiSelect options={uniqueTrucks} selectedTrucks={filters.trucks} setSelectedTrucks={(newValue) => setFilters((prev) => ({ ...prev, trucks: newValue }))} />
+            <TruckMultiSelect options={orderMetaData.trucks} selectedTrucks={filters.trucks} setSelectedTrucks={(newValue) => setFilters((prev) => ({ ...prev, trucks: newValue }))} />
             <input
               type="text"
               placeholder="Search..."
@@ -307,7 +315,8 @@ export default function OrdersFilterTable() {
             <TableHead>
               <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
                 {[
-                  "Bilty No.",
+                  "Date",
+                  "Order No.",
                   "Pickup",
                   "Dropoff",
                   "Consignee",
@@ -369,11 +378,7 @@ export default function OrdersFilterTable() {
                   <TableRow key={idx} hover>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.createdAt
-                        ? new Intl.DateTimeFormat({
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        }).format(new Date(order.createdAt))
+                        ? `${new Date(order.createdAt).getDate()}-${new Date(order.createdAt).getMonth() + 1}-${new Date(order.createdAt).getFullYear()}`
                         : "-"}
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
@@ -398,6 +403,8 @@ export default function OrdersFilterTable() {
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.driver?.name || "-"}
+                      <br />
+                      <span>({order?.driver?.phoneNumber || "-"})</span>
                     </TableCell>
                     <TableCell>
                       ₹

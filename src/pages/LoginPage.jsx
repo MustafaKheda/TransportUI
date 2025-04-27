@@ -4,7 +4,9 @@ import axios from "axios";
 import useAuthStore from "../api/authStore";
 import { api } from "../api/apihandler";
 import logo from "../assets/DTC.png";
+import { useOrderMeta } from "../utils/OrderDataContext";
 function LoginPage() {
+
   const { email, password, setEmail, setPassword, resetCredentials } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

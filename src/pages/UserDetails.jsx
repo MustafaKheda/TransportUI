@@ -7,22 +7,48 @@ import { api } from "../api/apihandler";
 function UserDetails() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [users, setUsers] = useState([]);
+  const [isEdit, setIsEdit] = useState(false);
+  const [fetching, setFetching] = useState(false);
+
+  const [fetchedUser, setFetchedUser] = useState({})
+
   const fetchUsers = async () => {
-    const response = await api.get(`${import.meta.env.VITE_BASE_URL}/auth`);
+    const response = await api.get(`/auth`);
     if (response.status == 200) {
       setUsers(response.data.users);
     }
   };
+
   useEffect(() => {
     fetchUsers();
   }, []);
+
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
+    setFetchedUser(null)
   };
+
+  const handleEdit = async (id) => {
+    console.log(id)
+    setIsEdit(true)
+    setFetching(true)
+    setIsModalOpen(true)
+    setFetchedUser(null)
+    try {
+      const res = await api.get(`/auth/${id}`)
+      setFetchedUser(res.data.user)
+      setFetching(false)
+    } catch (error) {
+      console.error(error, "error while fetching order")
+      setFetching(false)
+    }
+
+  }
+
 
   return (
     <div className="flex flex-col items-center p-6 gap-4 w-full">
@@ -73,7 +99,7 @@ function UserDetails() {
 
       {/* Users Table */}
       <div className="w-full">
-        <UsersTable users={users} setUsers={setUsers} />
+        <UsersTable users={users} setUsers={setUsers} handleEdit={handleEdit} fetchUsers={fetchUsers} />
       </div>
 
       {/* Modal for Registration Form */}
@@ -92,7 +118,7 @@ function UserDetails() {
           }}
 
         >
-          <RegistrationForm managers={users.filter(item => [1, 2].includes(item.roleId))} onClose={handleCloseModal} />
+          <RegistrationForm managers={users.filter(item => [1, 2].includes(item.roleId))} isEdit={isEdit} fetchedUser={fetchedUser} onClose={handleCloseModal} fetchUsers={fetchUsers} />
         </Box>
       </Modal>
     </div>

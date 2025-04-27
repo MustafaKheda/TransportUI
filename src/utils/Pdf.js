@@ -22,13 +22,20 @@ export const generatePDF = async (data) => {
 };
 
 export const printPdf = (pdfUrl) => {
-    const printWindow = window.open(pdfUrl, "_blank");
-    if (printWindow) {
-        printWindow.onload = () => {
-            printWindow.focus();
-            printWindow.print();
-        };
-    } else {
-        console.error('Failed to open print window');
+    try {
+        console.log(pdfUrl)
+        const printWindow = window.open(pdfUrl, "_blank");
+        console.log(printWindow, "pdf window")
+        if (printWindow) {
+            printWindow.onload = () => {
+                printWindow.focus();
+                printWindow.print();
+            };
+        } else {
+            console.error('Failed to open print window');
+        }
+    } catch (error) {
+        console.log(error)
     }
+
 };

@@ -17,7 +17,7 @@ import {
 import FreeSoloCreateOptionDialog from "../../AutoComplete";
 import { api } from "../../api/apihandler";
 
-function RegistrationForm({ order, onClose, managers }) {
+function RegistrationForm({ order, onClose, managers, isEdit, fetchedUser, fetchUsers }) {
   const [orderData, setOrderMetaData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [formErrors, setFormErrors] = useState({});
@@ -30,6 +30,22 @@ function RegistrationForm({ order, onClose, managers }) {
     managerId: null,
     roleId: 3,
   });
+
+
+  useEffect(() => {
+    if (!fetchedUser) return
+    setFormData(() => ({
+      name: fetchedUser.name || "",
+      email: fetchedUser.email || "",
+      branchId: fetchedUser.branchId || "",
+      managerId: fetchedUser.managerId || null,
+      roleId: fetchedUser.roleId || 3,
+    }))
+    console.log(fetchedUser)
+  }, [fetchedUser])
+
+
+
   const validateForm = () => {
     const errors = {};
 
@@ -75,6 +91,58 @@ function RegistrationForm({ order, onClose, managers }) {
     console.log(e.target, "formData");
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    try {
+      if (!fetchedUser) return;
+
+      const updatedFields = {};
+
+      // Check each field manually
+      if (formData.name !== fetchedUser.name) {
+        updatedFields.name = formData.name;
+      }
+      if (formData.email !== fetchedUser.email) {
+        updatedFields.email = formData.email;
+      }
+      if (formData.branchId !== fetchedUser.branchId) {
+        updatedFields.branchId = formData.branchId;
+      }
+      if (formData.managerId !== fetchedUser.managerId) {
+        updatedFields.managerId = formData.managerId;
+      }
+      if (formData.roleId !== fetchedUser.roleId) {
+        updatedFields.roleId = Number(formData.roleId);
+      }
+      if (formData.password) {
+        updatedFields.password = formData.password;
+      }
+
+      // If no fields changed, skip
+      if (Object.keys(updatedFields).length === 0) {
+        alert("No changes detected");
+        return;
+      }
+
+      setLoading(true);
+
+      const response = await api.patch(
+        `/auth/${fetchedUser.id}`,
+        updatedFields
+      );
+
+      console.log(response.data, "Update success");
+      fetchUsers()
+      onClose();
+    } catch (error) {
+      console.error(error.response?.data?.message || "Update error");
+      setFormErrors((prev) => ({ ...prev, email: error.response?.data?.message }));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
@@ -91,6 +159,7 @@ function RegistrationForm({ order, onClose, managers }) {
         `${import.meta.env.VITE_BASE_URL}/auth/register`,
         payload
       );
+      fetchUsers()
       console.log(response, "");
 
       onClose();
@@ -112,6 +181,7 @@ function RegistrationForm({ order, onClose, managers }) {
     }
   };
   console.log(orderData, "orderData");
+
   useEffect(() => {
     getOrderformData();
   }, []);
@@ -120,7 +190,7 @@ function RegistrationForm({ order, onClose, managers }) {
     <div className="w-full p-2 flex flex-col gap-3">
       {/* <TextField /> */}
       <h2 style={{ textAlign: "center" }}>Add User</h2>
-      <form className="flex gap-2 flex-col" onSubmit={handleSubmit}>
+      <form className="flex gap-2 flex-col" onSubmit={isEdit ? handleUpdate : handleSubmit}>
         <TextField
           size="small"
           label="Name"
@@ -151,7 +221,7 @@ function RegistrationForm({ order, onClose, managers }) {
           value={formData.password}
           onChange={handleChange}
           fullWidth
-          required
+          required={!isEdit}
         />
 
         {/* <FreeSoloCreateOptionDialog /> */}
@@ -220,7 +290,7 @@ function RegistrationForm({ order, onClose, managers }) {
               style={{ marginRight: 20 }}
             />
           )}{" "}
-          Submit
+          {isEdit ? "Update" : "Submit"}
         </Button>
       </form>
       <Button onClick={onClose} color="secondary" variant="outlined" fullWidth>

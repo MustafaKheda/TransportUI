@@ -18,10 +18,12 @@ import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
 import { api } from "../../api/apihandler";
 import { generatePDF, printPdf } from "../../utils/Pdf";
-const AddNewOrderModal = ({ onClose, ordermetadata }) => {
+import { useOrderMeta } from "../../utils/OrderDataContext";
+const AddNewOrderModal = ({ onClose, isFetching, order, isEdit }) => {
+  const { orderMetaData, refreshOrderMeta } = useOrderMeta()
   const itemNameRefs = useRef([]);
   const consignerRef = useRef(null);
-  const alldrivers = ordermetadata.drivers || [];
+  const alldrivers = orderMetaData?.drivers || [];
   const driverInfo = alldrivers.map((driver) => ({
     name: driver.name,
     phoneNumber: driver.phoneNumber,
@@ -34,17 +36,18 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     consigneegstin: "",
     consignorId: "",
     consigneeId: "",
-    pickupLocation: ordermetadata?.userLoction || "",
+    pickupLocation: orderMetaData?.userLoction || "",
     dropoffLocation: "",
     truckNumber: "",
     driverName: "",
     driverPhone: "",
   });
   const [savedOrder, setSavedOrder] = useState(null);
+  console.log(savedOrder)
   const [formErrors, setFormErrors] = useState({})
   const [invoice, setInvoice] = useState({
     gst: 0,
-    gstType: "igst",
+    gstType: "IGST",
     igst: 0,
     sgst: 0,
     cgst: 0,
@@ -55,26 +58,73 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     totalAmount: 0,
     balance: 0,
   })
+  const [loading, setLoading] = useState(false)
   const [newCustomer, setNewCustomer] = useState(null)
   const [orderItems, setOrderItems] = useState([
     { itemName: "", weight: 0, unit: "", amount: 0, qnt: 0, rate: 0 },
   ]);
 
+  useEffect(() => {
+    if (!isFetching && order && order?.createdAt) {
+      setSavedOrder(null)
+      setOrderData({
+        date: new Date(order?.createdAt).toISOString().split("T")[0],
+        consignor: order.consignor?.name || "",
+        consignee: order.consignee?.name || "",
+        consignorgstin: order.consignor?.gstin || "",
+        consigneegstin: order.consignee?.gstin || "",
+        consignorId: order.consignorId || "",
+        consigneeId: order.consigneeId || "",
+        pickupLocation: order.pickupLocation || "",
+        dropoffLocation: order.dropoffLocation || "",
+        truckNumber: order.truck?.truckNumber || "",
+        driverName: order.driver?.name || "",
+        driverPhone: order.driver?.phoneNumber || "",
+      });
+
+      setOrderItems(order.orderItems?.map(item => ({
+        itemName: item.itemName || "",
+        weight: item.weight || 0,
+        unit: item.unit || "",
+        amount: item.amount || 0,
+        qnt: item.quantity || 0,
+        rate: item.rate || 0,
+      })) || []);
+
+      setInvoice({
+        gst: order.invoice?.gst || 0,
+        gstType: order.invoice?.gstType || "",
+        igst: order.invoice?.gstType === "IGST" ? order.invoice?.gstRate : 0,
+        sgst: order.invoice?.gstType === "CGST_SGST" ? order.invoice?.gstRate / 2 : 0,
+        cgst: order.invoice?.gstType === "CGST_SGST" ? order.invoice?.gstRate / 2 : 0,
+        amount: order.invoice?.amount || 0,
+        freight: order.invoice?.freight || 0,
+        extraCharge: order.invoice?.extraCharge || 0,
+        advance: order.invoice?.advance || 0,
+        totalAmount: order.invoice?.totalAmount || 0,
+        balance: (order.invoice?.totalAmount || 0) - (order.invoice?.advance || 0),
+      });
+
+      console.log("Order pre-filled:", order);
+    }
+  }, [isFetching, order]);
+
+
   const users = useMemo(() => {
 
 
-    const baseCustomers = ordermetadata?.customers || [];
+    const baseCustomers = orderMetaData?.customers || [];
     return newCustomer ? [...baseCustomers, newCustomer] : [...baseCustomers];
-  }, [ordermetadata, newCustomer]);
+  }, [orderMetaData, newCustomer]);
 
   const alltrucks = useMemo(() => {
-    const trucks = new Set(ordermetadata.trucks?.map(item => item.truckNumber));
+    const trucks = new Set(orderMetaData?.trucks?.map(item => item.truckNumber));
     if (savedOrder?.order?.truck?.truckNumber) {
       trucks.add(savedOrder.order?.truck?.truckNumber);
     }
     console.log(trucks)
     return Array.from(trucks);
-  }, [ordermetadata.trucks, savedOrder]);
+  }, [orderMetaData?.trucks, savedOrder]);
 
   useEffect(() => {
     if (itemNameRefs.current.length > 0) {
@@ -82,6 +132,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       lastRef?.focus();
     }
   }, [orderItems.length]);
+
   const handleCustomer = (value, type, isNew) => {
     isNew && setNewCustomer(value)
 
@@ -106,6 +157,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
   const handleClose = (isCreated = false) => {
     resetForm()
+    setSavedOrder(null)
     onClose(isCreated)
     setFormErrors({})
   }
@@ -164,7 +216,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     const advance = parseFloat(invoice.advance) || 0
 
     let gstValue = 0;
-    if (invoice.gstType === "igst") {
+    if (invoice.gstType === "IGST") {
       gstValue = baseAmount * (parseFloat(invoice.igst) || 0) / 100;
     } else {
       const sgst = baseAmount * (parseFloat(invoice.sgst) || 0) / 100;
@@ -184,9 +236,9 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     if (orderData.pickupLocation) return
     setOrderData((prev) => ({
       ...prev,
-      pickupLocation: ordermetadata?.userLoction,
+      pickupLocation: orderMetaData?.userLoction,
     }))
-  }, [orderData.pickupLocation, ordermetadata?.userLoction])
+  }, [orderData.pickupLocation, orderMetaData?.userLoction])
 
   const handleOrderItemChange = (index, field, value) => {
     setFormErrors(prev => ({ ...prev, [`orderItems[${index}].${field}`]: null }));
@@ -233,7 +285,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     setOrderItems([{ itemName: "", weight: 0, unit: "", amount: 0, qnt: 0, rate: 0 }])
     setInvoice({
       gst: 0,
-      gstType: "igst",
+      gstType: "IGST",
       igst: 0,
       sgst: 0,
       cgst: 0,
@@ -246,8 +298,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     })
   };
   const gstOptions = [
-    { value: "igst", label: "IGST" },
-    { value: "sgst_cgst", label: "SGST + CGST" },
+    { value: "IGST", label: "IGST" },
+    { value: "CGST_SGST", label: "SGST + CGST" },
   ];
   const handleValidate = useCallback(() => {
     const fieldErrors = {};
@@ -322,11 +374,93 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     }
     return false
   }, [orderData, orderItems, invoice])
+  const hasOrderChanged = () => {
+    if (!isEdit) {
+      return true
+    }
+    console.log(order)
+    const originalPayload = {
+      date: order?.createdDate?.split("T")[0] || new Date(order?.createdAt).toISOString().split("T")[0],
+      consignor: order.consignor?.name || "",
+      consignee: order.consignee?.name || "",
+      consignorgstin: order.consignor?.gstin || "",
+      consigneegstin: order.consignee?.gstin || "",
+      consignorId: order.consignorId,
+      consigneeId: order.consigneeId,
+      pickupLocation: order.pickupLocation || "",
+      dropoffLocation: order.dropoffLocation || "",
+      truckNumber: order.truck?.truckNumber || "",
+      driverName: order.driver?.name || "",
+      driverPhone: order.driver?.phoneNumber || "",
+      driver: {
+        name: order.driver?.name || "",
+        phoneNumber: order.driver?.phoneNumber || ""
+      },
+      invoice: {
+        gst: Number(parseFloat(order?.invoice?.gst).toFixed(2)) || 0,
+        balance: Number(parseFloat((order.invoice?.totalAmount || 0) -
+          (order.invoice?.advance || 0)).toFixed(2)),
+        totalAmount: Number(parseFloat(order.invoice?.totalAmount).toFixed(2)),
+        gstType: order.invoice?.gst > 0 ? order.invoice?.gstType || "" : "",
+        igst: order.invoice?.gstType === "IGST" ? order.invoice?.gstRate : 0,
+        sgst: order.invoice?.gstType === "CGST_SGST" ? order.invoice?.gstRate / 2 : 0,
+        cgst: order.invoice?.gstType === "CGST_SGST" ? order.invoice?.gstRate / 2 : 0,
+        gstRate: order.invoice?.gstRate || "",
+        amount: Number(parseFloat(order.invoice?.amount).toFixed(2)) || 0,
+        freight: order.invoice?.freight || 0,
+        extraCharge: order.invoice?.extraCharge || 0,
+        advance: order.invoice?.advance || 0,
+      },
+      orderItems: (order.orderItems || []).map((item) => ({
+        itemName: item.itemName || "",
+        weight: item.weight || 0,
+        unit: item.unit || "",
+        amount: item.amount || 0,
+        qnt: item.quantity || 0,
+        rate: item.rate || 0
+      }))
+    };
+    const currentPayload = {
+      ...orderData,
+      driver: {
+        name: orderData.driverName.trim(),
+        phoneNumber: orderData.driverPhone.trim(),
+      },
+      invoice: {
+        gst: Number(parseFloat(invoice?.gst).toFixed(2)) || 0,
+        balance: Number(parseFloat((invoice?.totalAmount || 0) -
+          (invoice?.advance || 0)).toFixed(2)),
+        totalAmount: Number(parseFloat(invoice?.totalAmount).toFixed(2)),
+        gstType: invoice?.gst > 0 ? invoice?.gstType || "" : "",
+        igst: invoice?.gstType === "IGST" ? invoice?.igst : 0,
+        sgst: invoice?.gstType === "CGST_SGST" ? invoice?.sgst : 0,
+        cgst: invoice?.gstType === "CGST_SGST" ? invoice?.cgst : 0,
+        gstRate: invoice?.gst > 0
+          ? invoice.gstType === "IGST"
+            ? parseInt(invoice.igst)
+            : parseInt(invoice.sgst) + parseInt(invoice.cgst)
+          : '',
+        amount: Number(parseFloat(invoice?.amount).toFixed(2)) || 0,
+        freight: invoice?.freight || 0,
+        extraCharge: invoice?.extraCharge || 0,
+        advance: invoice?.advance || 0,
+      },
+      orderItems: orderItems
+    };
+    console.log(currentPayload)
+    console.log(JSON.stringify(originalPayload), "isEqual", JSON.stringify(currentPayload))
 
-  const handleSubmit = async (print = false) => {
+    return JSON.stringify(originalPayload) !== JSON.stringify(currentPayload);
+  };
+  const handleSubmit = useCallback(async (print = false) => {
+
     if (savedOrder && print) {
       console.log()
       return { error: false, savedOrder }
+    }
+    if (isEdit && !hasOrderChanged()) {
+      alert("No changes detected. Nothing to save.");
+      return { error: true, savedOrder: false };
     }
     if (handleValidate()) return { error: true, savedOrder: false }
 
@@ -339,8 +473,8 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       },
       invoice: {
         ...invoice,
-        gstType: invoice.gst > 0 ? invoice.gstType : '',
-        gstRate: invoice.gst > 0 ? invoice.gstType === "igst" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : ''
+        gstType: invoice.gstType,
+        gstRate: invoice.gst > 0 ? invoice.gstType === "IGST" ? parseInt(invoice.igst) : parseInt(invoice.sgst) + parseInt(invoice.cgst) : 0
       },
       orderItems
     };
@@ -348,27 +482,39 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     try {
       console.log("Validated Payload", payload);
       setSavedOrder(null)
-      const response = await api.post(`/orders?print=${print}`, payload, print ? { responseType: 'blob' } : {})
+      setLoading(true)
+      let response = null;
+      if (isEdit) {
+        response = await api.put(`/orders/${order.id}?print=${print}`, payload, print ? { responseType: 'blob' } : {})
+
+      } else {
+        response = await api.post(`/orders?print=${print}`, payload, print ? { responseType: 'blob' } : {})
+      }
+      refreshOrderMeta()
+      setLoading(false)
       if (print) {
         return { error: false, savedOrder: response.data }
       }
       setSavedOrder(response.data);
       console.log(response)
-      if (response.status === 201) {
+      if (response.status === 201 || response.status === 200) {
         // handleClose(true)
+        setLoading(false)
         consignerRef.current?.focus();
         resetForm();
         alert("Order Saved")
+        isEdit && handleClose(true)
         return response.data
       }
     } catch (error) {
       console.error(error, "error while creating order")
+      setLoading(false)
       return false
     }
 
 
     // Send payload to server
-  };
+  }, [orderData, orderItems, invoice]);
   const handleSaveAndDownload = async () => {
     try {
       const { error, savedOrder: pdfBlob } = await handleSubmit(true); // Get the PDF blob directly
@@ -379,9 +525,12 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       }
 
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log(pdfUrl)
       printPdf(pdfUrl); // or trigger download
+      setLoading(false)
       setSavedOrder(null);
       resetForm();
+      isEdit && handleClose(true)
     } catch (error) {
       console.error(error);
     }
@@ -393,6 +542,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
         alert("Failed to save order. Cannot generate PDF.");
         return;
       }
+      setLoading(true)
       const id = savedOrder.order.id
       const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
       console.log(response, "pdf")
@@ -401,6 +551,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
       console.log(pdfUrl)
       printPdf(pdfUrl);
       setSavedOrder(null)
+      setLoading(false)
     } catch (error) {
       console.error(error)
     }
@@ -409,6 +560,51 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
     // }
   }
   const getError = (key) => formErrors[key] || ""
+  if (isFetching) {
+    return <>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "12px",
+          paddingBottom: 5
+          // background: "linear-gradient(135deg, #A1EFA5, #ffffff)",
+          // boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+          // transform: "perspective(1000px) rotateX(1deg)",
+        }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            color: "#66a6ff",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+
+          }}>
+          {isEdit ? "Edit Order" : "Create Order"}
+        </h1>
+        <TextField
+          size="small"
+          sx={{ width: "30%", marginTop: 2, paddingX: 2 }}
+          label="Date"
+          type="date"
+          name="date"
+          value={orderData.date}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+        />
+      </div>
+
+      <div className="flex h-[90vh] justify-center items-center">
+        Fetching Order Details...
+
+      </div>
+    </>
+  }
+
+
   return (
     <Drawer
       variant="persistent"
@@ -431,7 +627,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           alignItems: "center",
           padding: "1rem",
           borderRadius: "12px",
-          paddingBottom:5
+          paddingBottom: 5
           // background: "linear-gradient(135deg, #A1EFA5, #ffffff)",
           // boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
           // transform: "perspective(1000px) rotateX(1deg)",
@@ -440,11 +636,11 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           style={{
             fontSize: "1.5rem",
             fontWeight: "bold",
-           color:"#66a6ff",
+            color: "#66a6ff",
             textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
 
           }}>
-          Create Order
+          {isEdit ? "Edit Order" : "Create Order"}
         </h1>
         <TextField
           size="small"
@@ -516,16 +712,10 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           size="small"
           fullWidth
           value={orderData?.pickupLocation || ""}
-          aria-readonly
-          // onChange={(e) => setOrderData({ ...orderData, pickupLocation: e.target.value })}
-          // InputProps={{
-          //   readOnly: true,
-          //   inputProps: {
-          //     tabIndex: -1,
-          //   },
-          // }}
+          // aria-readonly
+          onChange={(e) => setOrderData({ ...orderData, pickupLocation: e.target.value })}
           slotProps={{
-            htmlInput: { readOnly: true, tabIndex: -1 }
+            htmlInput: { readOnly: !isEdit, tabIndex: -1 }
           }}
         />
 
@@ -533,7 +723,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
           size="small"
           freeSolo
           value={orderData.dropoffLocation}
-          options={ordermetadata?.locationList}
+          options={orderMetaData?.locationList}
           renderInput={(params) => (
             <TextField {...params} label="To Location" fullWidth error={!!getError("dropoffLocation")}
               helperText={getError("dropoffLocation")} />
@@ -745,7 +935,7 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
             </Select>
           </FormControl>
 
-          {invoice.gstType === "igst" ? (
+          {invoice.gstType === "IGST" ? (
             <TextField
               label="IGST %"
               name="igst"
@@ -811,13 +1001,13 @@ const AddNewOrderModal = ({ onClose, ordermetadata }) => {
 
       {/* Bottom Actions */}
       <DialogActions sx={{ px: 2, py: 2, mt: "auto" }} >
-        <Button onClick={() => handleSubmit(false)} variant="contained" color="primary">
-          Save
+        <Button disabled={loading} onClick={() => handleSubmit(false)} variant="contained" color="primary">
+          {isEdit ? "Update" : "Save"}
         </Button>
-        <Button onClick={savedOrder ? handleDownloadPDF : handleSaveAndDownload} variant="contained" color="primary">
-          {savedOrder ? "Print" : "Save And Print"}
+        <Button disabled={loading} onClick={savedOrder ? handleDownloadPDF : handleSaveAndDownload} variant="contained" color="primary">
+          {savedOrder ? "Print" : isEdit ? "Update and Print" : "Save And Print"}
         </Button>
-        <Button tabIndex={-1} onClick={handleClose} color="error" variant="outlined">
+        <Button tabIndex={-1} onClick={() => handleClose(true)} color="error" variant="outlined">
           Cancel
         </Button>
       </DialogActions>

@@ -8,34 +8,80 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Drawer,
   Button,
-  CircularProgress,
 } from "@mui/material";
-
-import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
+import EditIcon from "@mui/icons-material/Edit";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { api } from "../api/apihandler";
-
+import BranchModal from "../components/BranchesDetailsPage/BranchModel";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 function BranchesDetails() {
   const [selected] = useState("Branches");
+  const [isEdit, setIsEdit] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [open, setOpen] = React.useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [fetchedBranch, setFetchedBranch] = useState({})
+  const handleClickOpen = (id) => {
+    setDeleteId(id)
+    setOpen(true);
+  };
 
+  const handleClose = () => {
+    setOpen(false);
+    setDeleteId(null)
+    setIsEdit(false)
+  };
+  const handleEdit = async (id) => {
+    console.log(id)
+    setIsEdit(true)
+    setFetching(true)
+    setIsModalOpen(true)
+    try {
+      const res = await api.get(`/branch/${id}`)
+      setFetchedBranch(res.data.branch)
+      setFetching(false)
+    } catch (error) {
+      console.error(error, "error while fetching order")
+      setFetching(false)
+    }
+
+  }
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [ordermetadata, setOrderMetaData] = useState([]);
+  const [branchs, setbranchs] = useState([]);
 
-  const handleCloseModal = () => setIsModalOpen(!isModalOpen);
+  const handleModalTrigger = () => {
+    setIsModalOpen(!isModalOpen); setIsEdit(false)
+  };
 
-  const getOrderformData = async () => {
+  const getBranchData = async () => {
     try {
       const response = await api.get(`${import.meta.env.VITE_BASE_URL}/branch`);
       console.log(response, "these are the branches");
-      setOrderMetaData(response.data.branches);
+      setbranchs(response.data.branches);
     } catch (error) {
       console.log("error consoling:-", error);
     }
   };
+  const handleDelete = async (id) => {
+    console.log(id)
+    try {
+      const res = await api.delete(`/branch/${id}`)
+      setOpen(false)
+      console.log(res)
+      getBranchData()
+      setDeleteId(null)
+    } catch (error) {
+      console.error(error, "error while Deleting order")
+    }
+  }
 
   useEffect(() => {
-    getOrderformData();
+    getBranchData();
   }, []);
   return (
     <div className="p-6 min-w-full">
@@ -48,41 +94,41 @@ function BranchesDetails() {
             alignItems: "center",
           }}>
           {/* Header with Add New Button */}
-         <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  width: "100%",
-                  alignItems: "center",
-                  padding: "1rem",
-                  borderRadius: "12px",
-                  background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
-                  boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
-                  transform: "perspective(1000px) rotateX(1deg)",
-                  marginBottom: 20,
-                }}>
-                <h1
-                  style={{
-                    fontSize: "1.5rem",
-                    fontWeight: "bold",
-                    color: "#fff",
-                    textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
-                  }}>
-                 Branches
-                </h1>
-                {/* <Button
-                  variant="contained"
-                  onClick={handleOpenModal}
-                  style={{
-                    background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
-                    color: "#fff",
-                    boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
-                    borderRadius: "8px",
-                    textTransform: "none",
-                  }}>
-                  Add User
-                </Button> */}
-              </div>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              width: "100%",
+              alignItems: "center",
+              padding: "1rem",
+              borderRadius: "12px",
+              background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
+              boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+              transform: "perspective(1000px) rotateX(1deg)",
+              marginBottom: 20,
+            }}>
+            <h1
+              style={{
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                color: "#fff",
+                textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+              }}>
+              Branches
+            </h1>
+            <Button
+              variant="contained"
+              onClick={handleModalTrigger}
+              style={{
+                background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+                color: "#fff",
+                boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+                borderRadius: "8px",
+                textTransform: "none",
+              }}>
+              Add Branch
+            </Button>
+          </div>
 
           {selected === "Branches" && (
             <TableContainer
@@ -110,27 +156,38 @@ function BranchesDetails() {
                     <TableCell>
                       <strong>Address</strong>
                     </TableCell>
+                    <TableCell>
+                      <strong>Action</strong>
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {ordermetadata.map((order) => (
-                    <TableRow key={order.id}>
+                  {branchs.map((item) => (
+                    <TableRow key={item.id}>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                        {order.id}
+                        {item.id}
                       </TableCell>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                        {order.name}
+                        {item.name}
                       </TableCell>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                        {order.location}
+                        {item.location}
                       </TableCell>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                        {order.gstin}
+                        {item.gstin}
                       </TableCell>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                        {order.contact}
+                        {item.contact}
                       </TableCell>
-                      <TableCell>{order.address}</TableCell>
+                      <TableCell style={{ borderRight: "1px solid #ccc" }}>{item.address}</TableCell>
+                      <TableCell className="!flex"><IconButton color="primary" onClick={() => handleEdit(item.id)}>
+                        <EditIcon />
+                      </IconButton>
+                        <IconButton color="error" onClick={() => handleClickOpen(item.id)}>
+                          <CancelIcon />
+                        </IconButton>
+                      </TableCell>
+
                     </TableRow>
                   ))}
                 </TableBody>
@@ -138,14 +195,28 @@ function BranchesDetails() {
             </TableContainer>
           )}
         </div>
-
-        {/* Add New Order Modal */}
-        <Drawer variant="persistent" anchor="right" open={isModalOpen}>
-          <AddNewOrderModal
-            ordermetadata={ordermetadata}
-            onClose={handleCloseModal}
-          />
-        </Drawer>
+        <Dialog
+          open={open}
+          onClose={handleClose}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">
+            {"Delete Order"}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Are You Sure You Want to Delete This Branch?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>no</Button>
+            <Button onClick={() => handleDelete(deleteId)} autoFocus>
+              Yes
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <BranchModal open={isModalOpen} isEdit={isEdit} isFetching={fetching} branchData={fetchedBranch} handleClose={handleModalTrigger} fetchBranch={getBranchData} />
       </div>
     </div>
   );

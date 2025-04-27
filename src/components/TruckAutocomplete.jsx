@@ -21,8 +21,9 @@ export default function TruckMultiSelect({ selectedTrucks, setSelectedTrucks, op
             disableCloseOnSelect
             getOptionLabel={(option) => {
                 console.log(option)
-                return option.number
+                return option.truckNumber
             }}
+            fullWidth
             value={selectedTrucks}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             onChange={(event, newValue) => setSelectedTrucks(newValue)}
@@ -35,7 +36,7 @@ export default function TruckMultiSelect({ selectedTrucks, setSelectedTrucks, op
                         style={{ marginRight: 8 }}
                         checked={selected}
                     />
-                    <ListItemText primary={option.number} />
+                    <ListItemText primary={option.truckNumber} />
                 </li>
             }
             }
@@ -46,7 +47,7 @@ export default function TruckMultiSelect({ selectedTrucks, setSelectedTrucks, op
                     label="Select Trucks"
                 />
             )}
-            sx={{ width: 250 }}
+
         />
     );
 }

@@ -11,8 +11,11 @@ import {
   Drawer,
   Button,
 } from "@mui/material";
-import MenuDrawer from "../components/DashboardPage/MenuDrawer";
-import MenuIcon from "@mui/icons-material/Menu";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
@@ -23,14 +26,26 @@ import { printPdf } from "../utils/Pdf";
 
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [ordermetadata, setOrderMetaData] = useState({})
-
+  const [open, setOpen] = React.useState(false);
   const [metaData, setMetaData] = useState([])
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [fetchedOrder, setFetchedOrder] = useState({})
   const [pdfLoadingIds, setPdfLoadingIds] = useState(new Set());
+  const handleClickOpen = (id) => {
+    setDeleteId(id)
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setDeleteId(null)
+  };
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
     getOrders(newPage, rowsPerPage);
@@ -45,21 +60,17 @@ export default function DashboardPage() {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = (isCreated = false) => {
     setIsModalOpen(!isModalOpen)
+    setFetching(false)
+    setIsEdit(false)
+    setFetchedOrder({})
+    console.log(isCreated)
     if (isCreated) {
-      getOrderformData();
       getOrders();
     }
   };
-  const getOrderformData = async () => {
-    try {
 
-      const response = await api.get(`/orders/meta`)
-      setOrderMetaData(response.data)
-    } catch (error) {
-      console.log("error consoling:-", error)
-    }
-  }
   const getOrders = async (currentPage = 0, limit = 10) => {
+    console.log("orders called")
     setLoading(true);
     try {
       const response = await api.get(`/orders?page=${currentPage + 1}&limit=${limit}`);
@@ -71,13 +82,43 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  const handleEdit = async (id) => {
+    console.log(id)
+    setIsEdit(true)
+    setFetching(true)
+    setIsModalOpen(true)
+    try {
+      const res = await api.get(`/orders/${id}`)
+      setFetchedOrder(res.data.order)
+      setFetching(false)
+    } catch (error) {
+      console.error(error, "error while fetching order")
+      setFetching(false)
+    }
+
+  }
+  const handleDelete = async (id) => {
+    console.log(id)
+    try {
+      const res = await api.delete(`/orders/${id}`)
+      setOpen(false)
+      console.log(res)
+      fetchData()
+      setDeleteId(null)
+    } catch (error) {
+      console.error(error, "error while Deleting order")
+    }
+
+  }
+  const fetchData = async () => {
+    getOrders();
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      getOrderformData();
-      getOrders();
-    };
     fetchData();
   }, [])
+
   const handleDownload = async (id) => {
     setPdfLoadingIds(prev => new Set(prev).add(id));
     try {
@@ -99,6 +140,27 @@ export default function DashboardPage() {
 
   return (
     <div style={{ width: "100%", margin: "0 5px" }}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Delete Order"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are You Sure You Want to Delete This Order?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>no</Button>
+          <Button onClick={() => handleDelete(deleteId)} autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
       <div
         style={{
           display: "flex",
@@ -150,6 +212,7 @@ export default function DashboardPage() {
           sx={{
             width: "100%",
             mt: 2,
+            minHeight: '75vh',
             maxHeight: '75vh',
             overflowY: 'auto',
             '&::-webkit-scrollbar': {
@@ -205,10 +268,10 @@ export default function DashboardPage() {
               </TableRow>
             </TableHead>
             {loading ? (
-              <TableRow key="loading">
+              <TableRow aria-rowspan={10} key="loading">
                 <TableCell
                   style={{ borderRight: "1px solid #ccc" }}
-                  colSpan={10}>
+                  colSpan={10} rowSpan={10}>
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -263,10 +326,10 @@ export default function DashboardPage() {
                         <CircularProgress size={24} />
                       ) : (
                         <>
-                          <IconButton color="primary">
+                          <IconButton color="primary" onClick={() => handleEdit(order.id)}>
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="error">
+                          <IconButton color="error" onClick={() => handleClickOpen(order.id)}>
                             <CancelIcon />
                           </IconButton>
                           <IconButton
@@ -306,8 +369,9 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
-
-          ordermetadata={ordermetadata}
+          isEdit={isEdit}
+          isFetching={fetching}
+          order={fetchedOrder}
           onClose={handleCloseModal}
         />
       </Drawer>
