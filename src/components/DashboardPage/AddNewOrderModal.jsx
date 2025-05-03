@@ -380,7 +380,7 @@ const AddNewOrderModal = ({ onClose, isFetching, order, isEdit }) => {
     }
     console.log(order)
     const originalPayload = {
-      date: order?.createdDate?.split("T")[0] || new Date(order?.createdAt).toISOString().split("T")[0],
+      date: new Date(order?.createdAt).toISOString().split("T")[0],
       consignor: order.consignor?.name || "",
       consignee: order.consignee?.name || "",
       consignorgstin: order.consignor?.gstin || "",

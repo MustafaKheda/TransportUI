@@ -129,6 +129,7 @@ export default function OrdersFilterTable() {
     filters.dropoff,
     filters.trucks,
     filters.pickup,
+    filters.search,
     reportType,
     selectedMonth,
     metaLoading
@@ -145,7 +146,6 @@ export default function OrdersFilterTable() {
         from: filters.from,
         to: filters.from,
         print: true,
-        pickup: filters.pickup,
       };
     } else if (reportType === "monthly" && selectedMonth) {
       const [year, month] = selectedMonth.split("-");
@@ -154,7 +154,6 @@ export default function OrdersFilterTable() {
       queryParams = {
         from,
         to,
-        pickup: filters.pickup,
         print: true,
       };
     } else {
@@ -176,8 +175,22 @@ export default function OrdersFilterTable() {
   };
 
   useEffect(() => {
-    const delay = setTimeout(() => {
-      setFilters((prev) => ({ ...prev, search: searchQuery }));
+    let delay
+    if (delay) {
+      clearTimeout(delay)
+    }
+    let queryParams = {
+      from: filters.from,
+      to: filters.to,
+      pickup: filters.pickup,
+      dropoff: filters.dropoff,
+      trucks: filters.trucks.map((item) => item.id),
+      search: searchQuery,
+    };
+    const query = new URLSearchParams(queryParams).toString();
+
+    delay = setTimeout(() => {
+      fetchOrders(query);
     }, 300);
     return () => clearTimeout(delay);
   }, [searchQuery])
@@ -298,7 +311,7 @@ export default function OrdersFilterTable() {
             <input
               type="text"
               placeholder="Search..."
-              value={filters.search}
+              value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 transition-all"
             />

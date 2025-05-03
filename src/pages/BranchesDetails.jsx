@@ -19,8 +19,12 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
+import { getRole } from "../components/DashboardPage/MenuDrawer";
+const allowedRoles = [1]
 function BranchesDetails() {
+
   const [selected] = useState("Branches");
+
   const [isEdit, setIsEdit] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -156,9 +160,9 @@ function BranchesDetails() {
                     <TableCell>
                       <strong>Address</strong>
                     </TableCell>
-                    <TableCell>
+                    {allowedRoles.includes(getRole()) && <TableCell>
                       <strong>Action</strong>
-                    </TableCell>
+                    </TableCell>}
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -180,13 +184,13 @@ function BranchesDetails() {
                         {item.contact}
                       </TableCell>
                       <TableCell style={{ borderRight: "1px solid #ccc" }}>{item.address}</TableCell>
-                      <TableCell className="!flex"><IconButton color="primary" onClick={() => handleEdit(item.id)}>
+                      {allowedRoles.includes(getRole()) && <TableCell className="!flex"><IconButton color="primary" onClick={() => handleEdit(item.id)}>
                         <EditIcon />
                       </IconButton>
                         <IconButton color="error" onClick={() => handleClickOpen(item.id)}>
                           <CancelIcon />
                         </IconButton>
-                      </TableCell>
+                      </TableCell>}
 
                     </TableRow>
                   ))}

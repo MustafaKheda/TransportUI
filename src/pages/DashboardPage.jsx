@@ -23,7 +23,8 @@ import { api } from "../api/apihandler";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { TablePagination, CircularProgress, Box } from "@mui/material";
 import { printPdf } from "../utils/Pdf";
-
+import { getRole } from "../components/DashboardPage/MenuDrawer";
+const allowedRoles = [1, 2]
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [open, setOpen] = React.useState(false);
@@ -283,7 +284,7 @@ export default function DashboardPage() {
               </TableRow>
             ) : (
               <TableBody className="!overflow-y-auto !max-h-[50vh]">
-                {orders.map((order) => (
+                {orders.length > 1 ? orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.orderNumber}
@@ -329,9 +330,9 @@ export default function DashboardPage() {
                           <IconButton color="primary" onClick={() => handleEdit(order.id)}>
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="error" onClick={() => handleClickOpen(order.id)}>
+                          {allowedRoles.includes(getRole()) && < IconButton color="error" onClick={() => handleClickOpen(order.id)}>
                             <CancelIcon />
-                          </IconButton>
+                          </IconButton>}
                           <IconButton
                             onClick={() => handleDownload(order.id)}
                             color="info">
@@ -341,7 +342,12 @@ export default function DashboardPage() {
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                )) : <TableCell
+                  colSpan={10} rowSpan={10}>
+                  <div className="font-bold min-h-96 text-3xl items-center flex justify-center">
+                    No Order Avaiable
+                  </div>
+                </TableCell>}
               </TableBody>
             )}
           </Table>
@@ -375,6 +381,6 @@ export default function DashboardPage() {
           onClose={handleCloseModal}
         />
       </Drawer>
-    </div>
+    </div >
   );
 }

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../api/apihandler"; // adjust as needed
+import { CircularProgress } from "@mui/material";
 
 const OrderMetaContext = createContext();
 const CACHE_KEY = "orderMetaData";
@@ -16,6 +17,7 @@ export const OrderMetaProvider = ({ children }) => {
                 data: response.data,
                 timestamp: Date.now(),
             };
+            localStorage.setItem("role", response.data.roleId)
             localStorage.setItem(CACHE_KEY, JSON.stringify(cacheObject));
             setOrderMetaData(response.data);
         } catch (error) {
@@ -27,8 +29,8 @@ export const OrderMetaProvider = ({ children }) => {
 
     const getOrderformData = async () => {
         try {
+            setLoading(true);
             const cached = localStorage.getItem(CACHE_KEY);
-
             await fetchAndCache();
         } catch (error) {
             console.error("Error loading cached order meta:", error);
@@ -37,14 +39,17 @@ export const OrderMetaProvider = ({ children }) => {
     };
 
     const refreshOrderMeta = async () => {
-        setLoading(true);
         await fetchAndCache();
     };
 
     useEffect(() => {
         getOrderformData();
     }, []);
-
+    if (loading) {
+        return <div className="flex h-[100vh] justify-center items-center">
+            <CircularProgress color="info" />
+        </div>
+    }
     return (
         <OrderMetaContext.Provider value={{ orderMetaData, loading, refreshOrderMeta }}>
             {children}
