@@ -11,25 +11,42 @@ import {
   Drawer,
   Button,
 } from "@mui/material";
-import MenuDrawer from "../components/DashboardPage/MenuDrawer";
-import MenuIcon from "@mui/icons-material/Menu";
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogTitle from '@mui/material/DialogTitle';
 import EditIcon from "@mui/icons-material/Edit";
 import CancelIcon from "@mui/icons-material/Cancel";
 import AddNewOrderModal from "../components/DashboardPage/AddNewOrderModal";
 import { api } from "../api/apihandler";
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import { TablePagination, CircularProgress, Box } from "@mui/material";
-
+import { printPdf } from "../utils/Pdf";
+import { getRole } from "../components/DashboardPage/MenuDrawer";
+const allowedRoles = [1, 2]
 export default function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [ordermetadata, setOrderMetaData] = useState({})
-
+  const [open, setOpen] = React.useState(false);
   const [metaData, setMetaData] = useState([])
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [fetchedOrder, setFetchedOrder] = useState({})
   const [pdfLoadingIds, setPdfLoadingIds] = useState(new Set());
+  const handleClickOpen = (id) => {
+    setDeleteId(id)
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setDeleteId(null)
+  };
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
     getOrders(newPage, rowsPerPage);
@@ -44,21 +61,17 @@ export default function DashboardPage() {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = (isCreated = false) => {
     setIsModalOpen(!isModalOpen)
+    setFetching(false)
+    setIsEdit(false)
+    setFetchedOrder({})
+    console.log(isCreated)
     if (isCreated) {
-      getOrderformData();
       getOrders();
     }
   };
-  const getOrderformData = async () => {
-    try {
 
-      const response = await api.get(`/orders/meta`)
-      setOrderMetaData(response.data)
-    } catch (error) {
-      console.log("error consoling:-", error)
-    }
-  }
   const getOrders = async (currentPage = 0, limit = 10) => {
+    console.log("orders called")
     setLoading(true);
     try {
       const response = await api.get(`/orders?page=${currentPage + 1}&limit=${limit}`);
@@ -70,19 +83,50 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+
+  const handleEdit = async (id) => {
+    console.log(id)
+    setIsEdit(true)
+    setFetching(true)
+    setIsModalOpen(true)
+    try {
+      const res = await api.get(`/orders/${id}`)
+      setFetchedOrder(res.data.order)
+      setFetching(false)
+    } catch (error) {
+      console.error(error, "error while fetching order")
+      setFetching(false)
+    }
+
+  }
+  const handleDelete = async (id) => {
+    console.log(id)
+    try {
+      const res = await api.delete(`/orders/${id}`)
+      setOpen(false)
+      console.log(res)
+      fetchData()
+      setDeleteId(null)
+    } catch (error) {
+      console.error(error, "error while Deleting order")
+    }
+
+  }
+  const fetchData = async () => {
+    getOrders();
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      getOrderformData();
-      getOrders();
-    };
     fetchData();
   }, [])
+
   const handleDownload = async (id) => {
     setPdfLoadingIds(prev => new Set(prev).add(id));
     try {
       const response = await api.get(`/orders/pdf/${id}`, { responseType: 'blob' });
       const pdfBlob = response.data;
       const pdfUrl = URL.createObjectURL(pdfBlob);
+      console.log(pdfUrl)
       printPdf(pdfUrl);
     } catch (error) {
       console.error("Failed to download PDF", error);
@@ -94,20 +138,65 @@ export default function DashboardPage() {
       });
     }
   };
-  const printPdf = (pdfUrl) => {
 
-    const printWindow = window.open(pdfUrl, "_blank");
-    if (printWindow) {
-      printWindow.onload = () => {
-        printWindow.focus();
-        printWindow.print();
-      };
-    } else {
-      console.error('Failed to open print window');
-    }
-  };
   return (
-    <div style={{ width: "95%", margin: "0 5px" }}>
+    <div style={{ width: "100%", margin: "0 5px" }}>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          {"Delete Order"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are You Sure You Want to Delete This Order?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>no</Button>
+          <Button onClick={() => handleDelete(deleteId)} autoFocus>
+            Yes
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          width: "100%",
+          alignItems: "center",
+          padding: "1rem",
+          borderRadius: "12px",
+          background: "linear-gradient(135deg, #66a6ff, #89f7fe)",
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.25)",
+          transform: "perspective(1000px) rotateX(1deg)",
+          marginBottom: 20,
+        }}>
+        <h1
+          style={{
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+            color: "#fff",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+          }}>
+          Orders
+        </h1>
+        <Button
+          variant="contained"
+          onClick={handleOpenModal}
+          style={{
+            background: "linear-gradient(to right, #66a6ff, #ff7eb3)",
+            color: "#fff",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.3)",
+            borderRadius: "8px",
+            textTransform: "none",
+          }}>
+          Create
+        </Button>
+      </div>
       <div
         style={{
           width: "100%",
@@ -116,27 +205,29 @@ export default function DashboardPage() {
           alignItems: "center",
         }}>
         {/* Header with Add New Button */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            width: "100%",
-            alignItems: "center",
-          }}>
-          <h1 className="text-2xl pb-3"> Orders </h1>
-          <Button
-            className="cursor-pointer"
-            variant="contained"
-            color="primary"
-            onClick={handleOpenModal}>
-            Add New
-          </Button>
-        </div>
+
         <TableContainer
           component={Paper}
           elevation={3}
-          sx={{ width: "100%", mt: 2 }}>
-          <Table>
+
+          sx={{
+            width: "100%",
+            mt: 2,
+            minHeight: '75vh',
+            maxHeight: '75vh',
+            overflowY: 'auto',
+            '&::-webkit-scrollbar': {
+              width: '6px', // thinner scrollbar
+            },
+            '&::-webkit-scrollbar-thumb': {
+              backgroundColor: '#888', // thumb color
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb:hover': {
+              backgroundColor: '#555',
+            },
+          }}>
+          <Table stickyHeader size="small">
             <TableHead>
               <TableRow style={{ backgroundColor: "rgb(161, 239, 165)" }}>
                 <TableCell style={{ borderRight: "1px solid #ccc" }}>
@@ -178,10 +269,10 @@ export default function DashboardPage() {
               </TableRow>
             </TableHead>
             {loading ? (
-              <TableRow key="loading">
+              <TableRow aria-rowspan={10} key="loading">
                 <TableCell
                   style={{ borderRight: "1px solid #ccc" }}
-                  colSpan={10}>
+                  colSpan={10} rowSpan={10}>
                   <Box
                     display="flex"
                     justifyContent="center"
@@ -192,11 +283,11 @@ export default function DashboardPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              <TableBody>
-                {orders.map((order) => (
+              <TableBody className="!overflow-y-auto !max-h-[50vh]">
+                {orders.length > 1 ? orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
-                      {order.orderNumber.split("-")[2]}
+                      {order.orderNumber}
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.consignor?.name || "N/A"}
@@ -220,6 +311,9 @@ export default function DashboardPage() {
                     </TableCell>
                     <TableCell style={{ borderRight: "1px solid #ccc" }}>
                       {order.driver?.name || "N/A"}
+                      <br />
+                      <span>({order?.driver?.phoneNumber || "N/A"})</span>
+
                     </TableCell>
                     <TableCell
                       style={{ borderRight: "1px solid #ccc" }}
@@ -227,18 +321,18 @@ export default function DashboardPage() {
                       ₹{order.invoice?.totalAmount?.toLocaleString() || 0}
                     </TableCell>
                     <TableCell
-                      style={{ borderRight: "1px solid #ccc" }}
+                      style={{ borderRight: "1px solid #ccc", p: "1px" }}
                       align="center">
                       {pdfLoadingIds.has(order.id) ? (
                         <CircularProgress size={24} />
                       ) : (
                         <>
-                          <IconButton color="primary">
+                          <IconButton color="primary" onClick={() => handleEdit(order.id)}>
                             <EditIcon />
                           </IconButton>
-                          <IconButton color="error">
+                          {allowedRoles.includes(getRole()) && < IconButton color="error" onClick={() => handleClickOpen(order.id)}>
                             <CancelIcon />
-                          </IconButton>
+                          </IconButton>}
                           <IconButton
                             onClick={() => handleDownload(order.id)}
                             color="info">
@@ -248,7 +342,12 @@ export default function DashboardPage() {
                       )}
                     </TableCell>
                   </TableRow>
-                ))}
+                )) : <TableCell
+                  colSpan={10} rowSpan={10}>
+                  <div className="font-bold min-h-96 text-3xl items-center flex justify-center">
+                    No Order Avaiable
+                  </div>
+                </TableCell>}
               </TableBody>
             )}
           </Table>
@@ -276,11 +375,12 @@ export default function DashboardPage() {
         }}
         open={isModalOpen}>
         <AddNewOrderModal
-          
-          ordermetadata={ordermetadata}
+          isEdit={isEdit}
+          isFetching={fetching}
+          order={fetchedOrder}
           onClose={handleCloseModal}
         />
       </Drawer>
-    </div>
+    </div >
   );
 }

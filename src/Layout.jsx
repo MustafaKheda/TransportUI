@@ -3,34 +3,84 @@
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
 import MenuDrawer from "./components/DashboardPage/MenuDrawer";
-import { Drawer, IconButton } from "@mui/material";
+import { Avatar, Drawer, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import { useOrderMeta } from "./utils/OrderDataContext";
+const drawerWidth = 270
 const Layout = () => {
+  const { orderMetaData } = useOrderMeta()
   const [selected, setSelected] = useState("Orders");
   const [drawerOpen, setDrawerOpen] = useState(true);
-
   const handleSelect = (selection) => setSelected(selection);
   const toggleDrawer = () => setDrawerOpen(!drawerOpen);
   return (
-    <div className="flex">
-      <Drawer variant="persistent" anchor="left"  open={drawerOpen}>
-        <MenuDrawer
-          onSelect={handleSelect}
-          toggleDrawer={toggleDrawer} />
+    <Box display="flex" flexDirection="row" minHeight="100vh" bgcolor="#f9fafb">
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant={"persistent"}
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer}
+        sx={{
+          width: drawerWidth,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+          },
+        }}
+      >
+        <MenuDrawer onSelect={() => { }} toggleDrawer={toggleDrawer} />
       </Drawer>
 
-      {/* Page Content */}
-      {!drawerOpen && (
-        <IconButton onClick={toggleDrawer} style={{ alignSelf: "flex-start", marginBottom: 10 }}>
-          <MenuIcon />
-        </IconButton>
-      )}
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          ml: !drawerOpen ? `${-drawerWidth}px` : 0,
+          transition: 'margin 0.3s ease',
+        }}
+      >
+        <AppBar
+          position="sticky"
+          elevation={1}
+          sx={{
+            bgcolor: "#ffffff",
+            color: "#111827",
+            zIndex: (theme) => theme.zIndex.drawer + 1,
+          }}
+        >
+          <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', px: 3 }}>
+            <Box display="flex" alignItems="center" gap={1}>
+              {!drawerOpen && (
+                <IconButton onClick={toggleDrawer} edge="start">
+                  <MenuIcon />
+                </IconButton>
+              )}
+              <Typography variant="h6" fontWeight="bold">
+                {orderMetaData?.branch?.name}
+              </Typography>
+            </Box>
 
-      <div style={{ marginLeft: drawerOpen ? 280 : 0, padding: 10, width: "100%", display: "flex", flexDirection: "column", alignItems: "center", }} className="flex-grow p-4 ">
-        <Outlet /> {/* This renders the current page component */}
-      </div>
-    </div>
+            <Box display="flex" alignItems="center" gap={2}>
+              <Typography variant="subtitle1">{orderMetaData.user.name}</Typography>
+
+              <Avatar alt={orderMetaData.user.name} />
+
+            </Box>
+          </Toolbar>
+        </AppBar>
+
+        <Box component="section" p={3}>
+          <Outlet />
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

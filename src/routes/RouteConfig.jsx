@@ -6,6 +6,7 @@ import UserDetails from "../pages/UserDetails";
 import TruckDetails from "../pages/TruckDetails";
 import DailyReport from "../pages/DailyReport";
 import Layout from "../Layout";
+import { OrderMetaProvider } from "../utils/OrderDataContext";
 const RouteConfig = () => {
   return (
 
@@ -13,13 +14,17 @@ const RouteConfig = () => {
       {/* Login page without Layout */}
       <Route path="/" element={<LoginPage />} />
       {/* All other routes with Layout */}
-      <Route  element={<Layout />}>
+
+      <Route element={<OrderMetaProvider>
+        <Layout />
+      </OrderMetaProvider>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/branchesdetails" element={<BranchesDetails />} />
         <Route path="/usersdetails" element={<UserDetails />} />
         <Route path="/trucksdetails" element={<TruckDetails />} />
         <Route path="/daily-report" element={<DailyReport />} />
       </Route>
+
     </Routes >
   );
 };
