@@ -17,7 +17,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DriverAutocomplete from "./DriverSelectorBox";
 import UserAutocompleteFields from "./AddNewUser";
 import { api } from "../../api/apihandler";
-import { generatePDF, printPdf } from "../../utils/Pdf";
+import { printPdf } from "../../utils/Pdf";
 import { useOrderMeta } from "../../utils/OrderDataContext";
 const AddNewOrderModal = ({ onClose, isFetching, order, isEdit }) => {
   const { orderMetaData, refreshOrderMeta } = useOrderMeta()
